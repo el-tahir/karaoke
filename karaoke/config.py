@@ -18,7 +18,11 @@ DEFAULT_BACKGROUND = "black"
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".flac", ".aac", ".m4a", ".ogg"}
 
 # --- Cache Settings ---
-ENABLE_CACHE = True  # Set to False to disable caching entirely
+ENABLE_AUDIO_CACHE = False
+ENABLE_STEMS_CACHE = True
+ENABLE_LYRICS_CACHE = False
+ENABLE_SUBTITLES_CACHE = False
+ENABLE_VIDEO_CACHE = False
 CACHE_MAX_SIZE_GB = 10.0  # Maximum cache size in GB (approximate)
 
 # --- YouTube Downloader Settings ---

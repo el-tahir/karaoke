@@ -58,36 +58,82 @@ def lrc_to_ass(lrc_path: Path, output_path: Path) -> Path:
     lines = sorted(lrc, key=lambda l: l.time)
     subs = pysubs2.SSAFile()
 
-    # Styles
-    style_default = pysubs2.SSAStyle("Default", primarycolor=pysubs2.Color(255, 255, 255, 0), alignment=pysubs2.Alignment.MIDDLE_CENTER)
-    style_karaoke = pysubs2.SSAStyle("Karaoke", primarycolor=pysubs2.Color(255, 255, 255, 0), secondarycolor=pysubs2.Color(255, 0, 0, 0), alignment=pysubs2.Alignment.MIDDLE_CENTER)
-    subs.styles["Default"] = style_default
-    subs.styles["Karaoke"] = style_karaoke
+    # Define base properties for all our text
+    font_name = "Arial"
+    font_size = 36
+    alignment = pysubs2.Alignment.BOTTOM_CENTER # Move to bottom for better viewing
+    margin_v = 30 # Vertical margin from the bottom of the screen
+
+    # Style for the CURRENT line (the one with karaoke highlighting)
+    # White text that turns red as it's sung.
+    style_current = pysubs2.SSAStyle(
+        fontname=font_name, fontsize=font_size,
+        primarycolor=pysubs2.Color(255, 255, 255),  # Upcoming part of the line (white)
+        secondarycolor=pysubs2.Color(255, 255, 0),      # Sung part of the line (red)
+        outlinecolor=pysubs2.Color(0, 0, 0),
+        alignment=alignment, marginv=margin_v,
+        outline=2, shadow=1
+    )
+
+    # Style for the NEXT line (the preview line)
+    # Dimmer, grey text. No karaoke effect.
+    style_next = pysubs2.SSAStyle(
+        fontname=font_name, fontsize=font_size - 8, # Slightly smaller
+        primarycolor=pysubs2.Color(128, 128, 128), # Dim grey color
+        outlinecolor=pysubs2.Color(0, 0, 0),
+        alignment=alignment, marginv=margin_v,
+        outline=2, shadow=1
+    )
+
+    subs.styles["Current"] = style_current
+    subs.styles["Next"] = style_next
 
     # Events
-    for idx, line in enumerate(lines):
-        start_sec = line.time
-        end_sec = lines[idx + 1].time if idx < len(lines) - 1 else start_sec + 2.0
-        tokens = _parse_inline_timings(line.text)
+    for idx, current_line in enumerate(lines):
+        # Determine the start and end time for this combined event
+        start_time_sec = current_line.time
+        # The event ends when the *next* line is supposed to start
+        end_time_sec = lines[idx + 1].time if idx + 1 < len(lines) else start_time_sec + 5.0
 
+        # 1. Prepare the CURRENT line text with karaoke tags
+        tokens = _parse_inline_timings(current_line.text)
         if tokens:
             words, starts = zip(*tokens)
-            durations: List[float] = [starts[i + 1] - t_start if i + 1 < len(starts) else max(0.1, end_sec - t_start) for i, t_start in enumerate(starts)]
-            ass_tokens: List[str] = [f"{{\\K{max(1, int(round(dur * 100)))}}}{word}" for word, dur in zip(words, durations)]
-            ass_text = " ".join(ass_tokens)
-            style_name = "Karaoke"
+            durations = [
+                starts[i + 1] - t_start if i + 1 < len(starts) else max(0.1, end_time_sec - t_start)
+                for i, t_start in enumerate(starts)
+            ]
+            karaoke_tokens = [f"{{\\K{max(1, int(round(dur * 100)))}}}{word}" for word, dur in zip(words, durations)]
+            current_line_text = " ".join(karaoke_tokens)
         else:
-            ass_text = TIMESTAMP_INLINE_RE.sub("", line.text).strip()
-            style_name = "Default"
+            # Fallback for lines without word-by-word timings
+            current_line_text = TIMESTAMP_INLINE_RE.sub("", current_line.text).strip()
 
-        subs.events.append(
-            pysubs2.SSAEvent(
-                start=int(start_sec * 1000),
-                end=int(end_sec * 1000),
-                text=ass_text,
-                style=style_name,
-            )
+        # 2. Prepare the NEXT line text (plain, no karaoke tags)
+        next_line_text = ""
+        if idx + 1 < len(lines):
+            # Get the clean text of the next line
+            next_line = lines[idx + 1]
+            next_line_text = TIMESTAMP_INLINE_RE.sub("", next_line.text).strip()
+
+        # 3. Combine them into a single text block for the SSAEvent
+        #    {\rStyleName} applies a style. \N is a hard newline.
+        #    The result is two lines of text, stacked vertically, each with its own style.
+        if next_line_text:
+            combined_text = f"{{\\fad(250, 250)}}{{\\rCurrent}}{current_line_text}{{\\rNext}}\\N{next_line_text}"
+        else:
+            # Handle the very last line, which has no "next" line
+            combined_text = f"{{\\fad(250, 250)}}{{\\rCurrent}}{current_line_text}"
+
+        # 4. Create and append the event
+        event = pysubs2.SSAEvent(
+            start=pysubs2.make_time(s=start_time_sec),
+            end=pysubs2.make_time(s=end_time_sec),
+            text=combined_text,
+            # The style here is just a default; the \r tags in the text override it.
+            # We can remove the explicit style parameter if we want.
         )
+        subs.events.append(event)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     subs.save(str(output_path))

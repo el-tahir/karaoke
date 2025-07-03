@@ -1,23 +1,25 @@
-syncedlyrics
-pylrc
-pysubs2
-cutlet
-unidic-lite
-audio-separator
-moviepy
-ffmpeg-python
-jupyterlab
-yt-dlp
+# /requirements.txt
+
+# Web Server
 fastapi
-# Uvicorn & CPU-only PyTorch
 uvicorn[standard]
+python-multipart
+jinja2
 
-# Pin NumPy < 2.0 for compatibility with compiled modules
-numpy<2.0
+# Tunneling for Colab
+pyngrok
 
-# ONNXRuntime CPU build required by audio_separator
-onnxruntime==1.18.0
+# Core Pipeline Dependencies
+yt-dlp
+syncedlyrics
+audio-separator
+ffmpeg-python
+pysubs2
+pylrc
 
-# Pin CPU-only PyTorch; extra index provides the cpu wheels
---extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.3.0+cpu 
+# AI & GPU Dependencies
+# Note: The Colab notebook will install specific CUDA-enabled versions of these.
+# 'onnxruntime-gpu' is specified for environments where it can be directly installed.
+torch
+torchaudio
+onnxruntime-gpu

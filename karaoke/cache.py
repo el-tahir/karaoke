@@ -62,7 +62,7 @@ class CacheManager:
 
     def get_cached_audio(self, url_or_query: str) -> Optional[Path]:
         """Check if audio is cached for a YouTube URL or search query."""
-        if not config.ENABLE_CACHE:
+        if not config.ENABLE_AUDIO_CACHE:
             return None
             
         cache_key = self._get_content_hash(url_or_query)
@@ -86,7 +86,7 @@ class CacheManager:
 
     def cache_audio(self, url_or_query: str, audio_path: Path) -> None:
         """Cache audio file for a YouTube URL or search query."""
-        if not config.ENABLE_CACHE:
+        if not config.ENABLE_AUDIO_CACHE:
             return
             
         cache_key = self._get_content_hash(url_or_query)
@@ -103,7 +103,7 @@ class CacheManager:
 
     def get_cached_stems(self, audio_path: Path) -> Optional[tuple[Path, Path]]:
         """Check if separated stems are cached for an audio file."""
-        if not config.ENABLE_CACHE:
+        if not config.ENABLE_STEMS_CACHE:
             return None
             
         file_hash = self._get_file_hash(audio_path)
@@ -129,7 +129,7 @@ class CacheManager:
 
     def cache_stems(self, audio_path: Path, instrumental_path: Path, vocals_path: Path) -> None:
         """Cache separated stems for an audio file."""
-        if not config.ENABLE_CACHE:
+        if not config.ENABLE_STEMS_CACHE:
             return
             
         file_hash = self._get_file_hash(audio_path)
@@ -147,7 +147,7 @@ class CacheManager:
 
     def get_cached_lyrics(self, track: str, artist: str) -> Optional[Path]:
         """Check if lyrics are cached for a track/artist combination."""
-        if not config.ENABLE_CACHE:
+        if not config.ENABLE_LYRICS_CACHE:
             return None
             
         cache_key = self._get_content_hash(f"{track}|{artist}")
@@ -170,7 +170,7 @@ class CacheManager:
 
     def cache_lyrics(self, track: str, artist: str, lyrics_path: Path) -> None:
         """Cache lyrics for a track/artist combination."""
-        if not config.ENABLE_CACHE:
+        if not config.ENABLE_LYRICS_CACHE:
             return
             
         cache_key = self._get_content_hash(f"{track}|{artist}")
@@ -188,7 +188,7 @@ class CacheManager:
 
     def get_cached_subtitles(self, lrc_path: Path) -> Optional[Path]:
         """Check if subtitles are cached for an LRC file."""
-        if not config.ENABLE_CACHE:
+        if not config.ENABLE_SUBTITLES_CACHE:
             return None
             
         lrc_hash = self._get_file_hash(lrc_path)
@@ -211,7 +211,7 @@ class CacheManager:
 
     def cache_subtitles(self, lrc_path: Path, subtitles_path: Path) -> None:
         """Cache subtitles for an LRC file."""
-        if not config.ENABLE_CACHE:
+        if not config.ENABLE_SUBTITLES_CACHE:
             return
             
         lrc_hash = self._get_file_hash(lrc_path)
@@ -229,7 +229,7 @@ class CacheManager:
     def get_cached_video(self, audio_path: Path, subtitles_path: Path, 
                         resolution: str, background: str) -> Optional[Path]:
         """Check if video is cached for given parameters."""
-        if not config.ENABLE_CACHE:
+        if not config.ENABLE_VIDEO_CACHE:
             return None
             
         cache_params = {
@@ -259,7 +259,7 @@ class CacheManager:
     def cache_video(self, audio_path: Path, subtitles_path: Path, resolution: str, 
                    background: str, video_path: Path) -> None:
         """Cache video for given parameters."""
-        if not config.ENABLE_CACHE:
+        if not config.ENABLE_VIDEO_CACHE:
             return
             
         cache_params = {

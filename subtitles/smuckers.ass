@@ -8,130 +8,131 @@ ScriptType: v4.00+
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Default,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,5,10,10,10,1
-Style: Karaoke,Karaoke,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,5,10,10,10,1
+Style: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1
+Style: Current,Arial,48,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,1,2,10,10,30,1
+Style: Next,Arial,40,&H00B4B4B4,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,1,2,10,10,30,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:00.00,0:00:00.78,Default,,0,0,0,,作词 : Kanye West/Dwayne Carter/Tyler Okonma
-Dialogue: 0,0:00:00.78,0:00:01.56,Default,,0,0,0,,作曲 : Kanye West/Gabriele Ducros/Dwayne Carter/Tyler Okonma
-Dialogue: 0,0:00:01.56,0:00:02.75,Default,,0,0,0,,For your boy
-Dialogue: 0,0:00:02.75,0:00:05.64,Default,,0,0,0,,I'm watchin Freaks and Geeks with the trampoline on the floor
-Dialogue: 0,0:00:05.64,0:00:10.48,Default,,0,0,0,,I'm tryna cop the new McLaren with the vertical doors, **** it
-Dialogue: 0,0:00:10.48,0:00:13.36,Default,,0,0,0,,Money, money, money, money; money ain't the motive
-Dialogue: 0,0:00:13.36,0:00:15.48,Default,,0,0,0,,What's your name again? Nobody knows it
-Dialogue: 0,0:00:15.48,0:00:17.88,Default,,0,0,0,,Don't speak to me bitch, you not important
-Dialogue: 0,0:00:17.88,0:00:23.54,Default,,0,0,0,,I'm focused (2, 3, 4), bring in the horns
-Dialogue: 0,0:00:23.54,0:00:26.50,Default,,0,0,0,,They say I'm nutty, I'm picnic basket, I'm short of a sandwich
-Dialogue: 0,0:00:26.50,0:00:28.66,Default,,0,0,0,,I'm peanut butter, Boyce Watkin's a mother****e
-Dialogue: 0,0:00:28.66,0:00:30.90,Default,,0,0,0,,Please come and get me, said I suck him at your neck
-Dialogue: 0,0:00:30.90,0:00:32.54,Default,,0,0,0,,Like a hickey, boy I'm sicky
-Dialogue: 0,0:00:32.54,0:00:35.58,Default,,0,0,0,,Like a HIV victim, ain't nobody ****ing wit me
-Dialogue: 0,0:00:35.58,0:00:38.62,Default,,0,0,0,,I got banned from New Zealand, Whitey called me a demon
-Dialogue: 0,0:00:38.62,0:00:41.64,Default,,0,0,0,,And a terrorist, goddammit, I couldn't believe in it
-Dialogue: 0,0:00:41.64,0:00:44.56,Default,,0,0,0,,Ban a kid from a country; I never fall, never timber
-Dialogue: 0,0:00:44.56,0:00:47.58,Default,,0,0,0,,But you ****ed up as a parent; your child idol's a nigger
-Dialogue: 0,0:00:47.58,0:00:50.82,Default,,0,0,0,,I clearly don't give a ****, so you could run that shit back
-Dialogue: 0,0:00:50.82,0:00:54.12,Default,,0,0,0,,And **** your loud pack, and **** your Snapchat
-Dialogue: 0,0:00:54.12,0:00:57.06,Default,,0,0,0,,Cherry Bomb the greatest ****ing album since the days of sound
-Dialogue: 0,0:00:57.06,0:01:00.08,Default,,0,0,0,,And that shit gon pop just like that mother****er that was never 'roun
-Dialogue: 0,0:01:00.08,0:01:02.98,Default,,0,0,0,,Damn, bout to drop, gas 'em up, thick exhaust
-Dialogue: 0,0:01:02.98,0:01:06.18,Default,,0,0,0,,Young T, came quick, hard to beat, niggas is soft
-Dialogue: 0,0:01:06.18,0:01:09.12,Default,,0,0,0,,We ain't lyin, we the truth, call him Simba, beats his hooves
-Dialogue: 0,0:01:09.12,0:01:11.44,Default,,0,0,0,,Tyler the Creator sweatin Jesus juice
-Dialogue: 0,0:01:11.44,0:01:14.56,Default,,0,0,0,,Put that mother****ing cow on my level, cause I'm raisin the stake
-Dialogue: 0,0:01:14.56,0:01:17.60,Default,,0,0,0,,Mom I made you a promise, it's no more section 8
-Dialogue: 0,0:01:17.60,0:01:20.70,Default,,0,0,0,,When we ate its the steaks, now our section is great
-Dialogue: 0,0:01:20.70,0:01:23.76,Default,,0,0,0,,Cause that's the level I'm at, my niggas pass 'em a plate
-Dialogue: 0,0:01:23.76,0:01:24.64,Default,,0,0,0,,'Ye!
-Dialogue: 0,0:01:24.64,0:01:29.12,Default,,0,0,0,,Why, oh why, why, why don't they like me?
-Dialogue: 0,0:01:29.12,0:01:31.04,Default,,0,0,0,,Cause Nike gave a lot of niggas checks
-Dialogue: 0,0:01:31.04,0:01:36.50,Default,,0,0,0,,But I'm the only nigga to ever check Nike
-Dialogue: 0,0:01:36.50,0:01:39.70,Default,,0,0,0,,Richer than white people with black kids
-Dialogue: 0,0:01:39.70,0:01:42.84,Default,,0,0,0,,Scarier than black people with ideas
-Dialogue: 0,0:01:42.84,0:01:44.84,Default,,0,0,0,,Nobody can tell me where I'm headin
-Dialogue: 0,0:01:44.84,0:01:48.03,Default,,0,0,0,,But I feel like Michael Jordan, Scottie Pippen at my weddin
-Dialogue: 0,0:01:48.03,0:01:51.06,Default,,0,0,0,,They say I'm crazy, but that's the best thing goin for me
-Dialogue: 0,0:01:51.06,0:01:53.95,Default,,0,0,0,,You can't Lynch Marshawn if Tom Brady throwin to me
-Dialogue: 0,0:01:53.95,0:01:56.77,Default,,0,0,0,,I made a million mistakes, but I'm successful in spite of 'em
-Dialogue: 0,0:01:56.77,0:01:59.84,Default,,0,0,0,,I believe you like a fat trainer takin a bite or somethin
-Dialogue: 0,0:01:59.84,0:02:02.10,Default,,0,0,0,,I wanna turn the tanks to playgrounds
-Dialogue: 0,0:02:02.10,0:02:05.13,Default,,0,0,0,,I dreamt of 2Pac; he asked me "Are you still down?"
-Dialogue: 0,0:02:05.13,0:02:08.45,Default,,0,0,0,,Yeah my niggas, it's on, it's on, it's on, it's on
-Dialogue: 0,0:02:08.45,0:02:11.58,Default,,0,0,0,,I know they tell they white daughters "Don't bring home Jerome"
-Dialogue: 0,0:02:11.58,0:02:15.86,Default,,0,0,0,,I am the free nigga archetype,I am the light and the beacon
-Dialogue: 0,0:02:15.86,0:02:17.67,Default,,0,0,0,,You can ask the deacon
-Dialogue: 0,0:02:17.67,0:02:20.56,Default,,0,0,0,,It's funny, when you get extra money
-Dialogue: 0,0:02:20.56,0:02:23.30,Default,,0,0,0,,Every joke you tell just be extra funny
-Dialogue: 0,0:02:23.30,0:02:26.10,Default,,0,0,0,,I mean, you can even dress extra bummy
-Dialogue: 0,0:02:26.10,0:02:28.90,Default,,0,0,0,,****ing bathroom break, nose extra runny
-Dialogue: 0,0:02:28.90,0:02:31.88,Default,,0,0,0,,And I gave you all I got, you still want extra from me
-Dialogue: 0,0:02:31.88,0:02:34.68,Default,,0,0,0,,Oxford want a full-blown lecture from me
-Dialogue: 0,0:02:34.68,0:02:38.86,Default,,0,0,0,,And the Lexus pull up, errr, like hop, I hopped out, like wassup?
-Dialogue: 0,0:02:38.86,0:02:49.40,Default,,0,0,0,,Err-err-err, step back, hold up, my niggas, you suck, hold up
-Dialogue: 0,0:02:49.40,0:02:50.90,Default,,0,0,0,,I studied the proportions
-Dialogue: 0,0:02:50.90,0:02:53.50,Default,,0,0,0,,Emotions runnin at a Autobahn speed-level
-Dialogue: 0,0:02:53.50,0:02:56.38,Default,,0,0,0,,Had a drink with fear, and I was textin God
-Dialogue: 0,0:02:56.38,0:03:01.61,Default,,0,0,0,,He said 'I gave you a big dick, so go extra hard'
-Dialogue: 0,0:03:01.61,0:03:02.81,Default,,0,0,0,,For your boy
-Dialogue: 0,0:03:02.81,0:03:05.70,Default,,0,0,0,,I'm tryna pop the new McLaren with the vertical doors
-Dialogue: 0,0:03:05.70,0:03:09.16,Default,,0,0,0,,I'm watchin Freak and Geeks, got a trampoline in my room
-Dialogue: 0,0:03:09.16,0:03:11.25,Default,,0,0,0,,Damn
-Dialogue: 0,0:03:11.25,0:03:12.37,Default,,0,0,0,,(2, 3, 4)
-Dialogue: 0,0:03:12.37,0:03:17.75,Default,,0,0,0,,Hold your ****ing horses, niggas really ****ing thought that T lost it
-Dialogue: 0,0:03:17.75,0:03:20.04,Default,,0,0,0,,Like I bet it at a auction, been exhausted
-Dialogue: 0,0:03:20.04,0:03:24.02,Default,,0,0,0,,I been workin while y'all cylinders smoke like broken exhaust tips
-Dialogue: 0,0:03:24.02,0:03:26.11,Default,,0,0,0,,****ing losers
-Dialogue: 0,0:03:26.11,0:03:27.93,Default,,0,0,0,,Hold your ****ing ponies, my homie
-Dialogue: 0,0:03:27.93,0:03:29.67,Default,,0,0,0,,I'll whip your donkey by my lonely
-Dialogue: 0,0:03:29.67,0:03:32.08,Default,,0,0,0,,I eat niggas like Shoney's (Yeah)
-Dialogue: 0,0:03:32.08,0:03:34.21,Default,,0,0,0,,It's Tunechi, homie, master of ceremonies
-Dialogue: 0,0:03:34.21,0:03:37.57,Default,,0,0,0,,I knock 'em down, domino effect; no pepperoni
-Dialogue: 0,0:03:37.57,0:03:38.50,Default,,0,0,0,,I swear
-Dialogue: 0,0:03:38.50,0:03:40.49,Default,,0,0,0,,This them Golf boys, like them Hot Boy$
-Dialogue: 0,0:03:40.49,0:03:42.99,Default,,0,0,0,,For the nine-nine and two-thousand
-Dialogue: 0,0:03:42.99,0:03:44.69,Default,,0,0,0,,But its the two-thou'
-Dialogue: 0,0:03:44.69,0:03:46.61,Default,,0,0,0,,And the one-four, and the one-five
-Dialogue: 0,0:03:46.61,0:03:48.46,Default,,0,0,0,,Yo, what up Wayne?
-Dialogue: 0,0:03:48.46,0:03:50.27,Default,,0,0,0,,(What up Slime, niggas go hard)
-Dialogue: 0,0:03:50.27,0:03:52.87,Default,,0,0,0,,Yeah, I'mma go hard like before came
-Dialogue: 0,0:03:52.87,0:03:55.39,Default,,0,0,0,,Got too much drive, need like ten lanes
-Dialogue: 0,0:03:55.39,0:03:57.73,Default,,0,0,0,,Life is a broad and she give brain
-Dialogue: 0,0:03:57.73,0:04:00.11,Default,,0,0,0,,That's that road head (yeah) thats a dream car
-Dialogue: 0,0:04:00.11,0:04:03.33,Default,,0,0,0,,Got a full tank of that same year I was born
-Dialogue: 0,0:04:03.33,0:04:05.41,Default,,0,0,0,,That's that one-nine-nine-one
-Dialogue: 0,0:04:05.41,0:04:07.91,Default,,0,0,0,,'nother nigga like I, you won't find one
-Dialogue: 0,0:04:07.91,0:04:10.85,Default,,0,0,0,,Cause ****ing I'm a god, a divine one
-Dialogue: 0,0:04:10.85,0:04:11.49,Default,,0,0,0,,Tune
-Dialogue: 0,0:04:11.49,0:04:13.95,Default,,0,0,0,,My trigger finger wise but my 9 dumb (Yeah)
-Dialogue: 0,0:04:13.95,0:04:17.29,Default,,0,0,0,,Middle finger blind, so its ****ing A-N-Y-one
-Dialogue: 0,0:04:17.29,0:04:20.15,Default,,0,0,0,,****ed, skate, and die son; a hundred ways to die so
-Dialogue: 0,0:04:20.15,0:04:23.45,Default,,0,0,0,,I'm starin at a tramp-on-lean, make my eye jump
-Dialogue: 0,0:04:23.45,0:04:26.38,Default,,0,0,0,,Use Adderall like alarm clocks, wake my high up
-Dialogue: 0,0:04:26.38,0:04:29.37,Default,,0,0,0,,Stakes are high; well done, and prime cut, eat up
-Dialogue: 0,0:04:29.37,0:04:31.55,Default,,0,0,0,,I stick my rollie in her mouth, let the time come
-Dialogue: 0,0:04:31.55,0:04:35.23,Default,,0,0,0,,She got hair like Sheneneh, and eyes like Wanda
-Dialogue: 0,0:04:35.23,0:04:36.26,Default,,0,0,0,,Oh my goodness
-Dialogue: 0,0:04:36.26,0:04:37.05,Default,,0,0,0,,Wayne them niggas ugly
-Dialogue: 0,0:04:37.05,0:04:38.99,Default,,0,0,0,,These niggas colder than Tommy buddy
-Dialogue: 0,0:04:38.99,0:04:42.29,Default,,0,0,0,,'Ye we hittin models like Tony Parker be hittin bottles
-Dialogue: 0,0:04:42.29,0:04:45.37,Default,,0,0,0,,****ing I'm goin harder than yellow cabbies stoppin for Lionel
-Dialogue: 0,0:04:45.37,0:04:47.47,Default,,0,0,0,,(Black ass niggas) They be duckin us niggas
-Dialogue: 0,0:04:47.47,0:04:50.29,Default,,0,0,0,,Shout out to Donald Sterling, boy lets get a scrimmage
-Dialogue: 0,0:04:50.29,0:04:52.23,Default,,0,0,0,,And cut some niggas I'll bring the Clippers
-Dialogue: 0,0:04:52.23,0:04:54.55,Default,,0,0,0,,And a couple owners that's kinda German
-Dialogue: 0,0:04:54.55,0:04:56.57,Default,,0,0,0,,You bring the nooses, and a couple trees
-Dialogue: 0,0:04:56.57,0:04:58.75,Default,,0,0,0,,Where the money grow, and get bodies burnin
-Dialogue: 0,0:04:58.75,0:05:02.33,Default,,0,0,0,,Cause I'm tryna hang like I'm Mr. Cooper or Jews in Berlin
-Dialogue: 0,0:05:02.33,0:05:05.15,Default,,0,0,0,,Or some niggas from Alabama, Birmingham
-Dialogue: 0,0:05:05.15,0:05:09.15,Default,,0,0,0,,I need music so I'm over the street like Erick Sermon was
-Dialogue: 0,0:05:09.15,0:05:11.41,Default,,0,0,0,,****ing us, maybe we should team up
-Dialogue: 0,0:05:11.41,0:05:14.37,Default,,0,0,0,,Anti-Golf boys, cuz I don't **** with me either
-Dialogue: 0,0:05:14.37,0:05:16.35,Default,,0,0,0,,I'm a liar, I'm a nigga, uhh...
-Dialogue: 0,0:05:16.35,0:05:17.75,Default,,0,0,0,,Son you need Jesus
-Dialogue: 0,0:05:17.75,0:05:21.06,Default,,0,0,0,,But I heard he left Sunset to go on tour with Yeezus
-Dialogue: 0,0:05:21.06,0:05:24.25,Default,,0,0,0,,Well, I'm prayin for the new Yeezys
-Dialogue: 0,0:05:24.25,0:05:27.57,Default,,0,0,0,,And you niggas prayin that we squash the beef like zucchini
-Dialogue: 0,0:05:27.57,0:05:32.05,Default,,0,0,0,,I know; it ain't gain, nor fame, nor tame, or lame, nor strange
-Dialogue: 0,0:05:32.05,0:06:40.51,Default,,0,0,0,,Nah niggas, it's Golf Wang
-Dialogue: 0,0:06:40.51,0:06:42.51,Default,,0,0,0,,
+Dialogue: 0,0:00:00.00,0:00:00.78,Default,,0,0,0,,{\rCurrent}作词 : Kanye West/Dwayne Carter/Tyler Okonma{\rNext}\N作曲 : Kanye West/Gabriele Ducros/Dwayne Carter/Tyler Okonma
+Dialogue: 0,0:00:00.78,0:00:01.56,Default,,0,0,0,,{\rCurrent}作曲 : Kanye West/Gabriele Ducros/Dwayne Carter/Tyler Okonma{\rNext}\NFor your boy
+Dialogue: 0,0:00:01.56,0:00:02.75,Default,,0,0,0,,{\rCurrent}For your boy{\rNext}\NI'm watchin Freaks and Geeks with the trampoline on the floor
+Dialogue: 0,0:00:02.75,0:00:05.64,Default,,0,0,0,,{\rCurrent}I'm watchin Freaks and Geeks with the trampoline on the floor{\rNext}\NI'm tryna cop the new McLaren with the vertical doors, **** it
+Dialogue: 0,0:00:05.64,0:00:10.48,Default,,0,0,0,,{\rCurrent}I'm tryna cop the new McLaren with the vertical doors, **** it{\rNext}\NMoney, money, money, money; money ain't the motive
+Dialogue: 0,0:00:10.48,0:00:13.36,Default,,0,0,0,,{\rCurrent}Money, money, money, money; money ain't the motive{\rNext}\NWhat's your name again? Nobody knows it
+Dialogue: 0,0:00:13.36,0:00:15.48,Default,,0,0,0,,{\rCurrent}What's your name again? Nobody knows it{\rNext}\NDon't speak to me bitch, you not important
+Dialogue: 0,0:00:15.48,0:00:17.88,Default,,0,0,0,,{\rCurrent}Don't speak to me bitch, you not important{\rNext}\NI'm focused (2, 3, 4), bring in the horns
+Dialogue: 0,0:00:17.88,0:00:23.54,Default,,0,0,0,,{\rCurrent}I'm focused (2, 3, 4), bring in the horns{\rNext}\NThey say I'm nutty, I'm picnic basket, I'm short of a sandwich
+Dialogue: 0,0:00:23.54,0:00:26.50,Default,,0,0,0,,{\rCurrent}They say I'm nutty, I'm picnic basket, I'm short of a sandwich{\rNext}\NI'm peanut butter, Boyce Watkin's a mother****e
+Dialogue: 0,0:00:26.50,0:00:28.66,Default,,0,0,0,,{\rCurrent}I'm peanut butter, Boyce Watkin's a mother****e{\rNext}\NPlease come and get me, said I suck him at your neck
+Dialogue: 0,0:00:28.66,0:00:30.90,Default,,0,0,0,,{\rCurrent}Please come and get me, said I suck him at your neck{\rNext}\NLike a hickey, boy I'm sicky
+Dialogue: 0,0:00:30.90,0:00:32.54,Default,,0,0,0,,{\rCurrent}Like a hickey, boy I'm sicky{\rNext}\NLike a HIV victim, ain't nobody ****ing wit me
+Dialogue: 0,0:00:32.54,0:00:35.58,Default,,0,0,0,,{\rCurrent}Like a HIV victim, ain't nobody ****ing wit me{\rNext}\NI got banned from New Zealand, Whitey called me a demon
+Dialogue: 0,0:00:35.58,0:00:38.62,Default,,0,0,0,,{\rCurrent}I got banned from New Zealand, Whitey called me a demon{\rNext}\NAnd a terrorist, goddammit, I couldn't believe in it
+Dialogue: 0,0:00:38.62,0:00:41.64,Default,,0,0,0,,{\rCurrent}And a terrorist, goddammit, I couldn't believe in it{\rNext}\NBan a kid from a country; I never fall, never timber
+Dialogue: 0,0:00:41.64,0:00:44.56,Default,,0,0,0,,{\rCurrent}Ban a kid from a country; I never fall, never timber{\rNext}\NBut you ****ed up as a parent; your child idol's a nigger
+Dialogue: 0,0:00:44.56,0:00:47.58,Default,,0,0,0,,{\rCurrent}But you ****ed up as a parent; your child idol's a nigger{\rNext}\NI clearly don't give a ****, so you could run that shit back
+Dialogue: 0,0:00:47.58,0:00:50.82,Default,,0,0,0,,{\rCurrent}I clearly don't give a ****, so you could run that shit back{\rNext}\NAnd **** your loud pack, and **** your Snapchat
+Dialogue: 0,0:00:50.82,0:00:54.12,Default,,0,0,0,,{\rCurrent}And **** your loud pack, and **** your Snapchat{\rNext}\NCherry Bomb the greatest ****ing album since the days of sound
+Dialogue: 0,0:00:54.12,0:00:57.06,Default,,0,0,0,,{\rCurrent}Cherry Bomb the greatest ****ing album since the days of sound{\rNext}\NAnd that shit gon pop just like that mother****er that was never 'roun
+Dialogue: 0,0:00:57.06,0:01:00.08,Default,,0,0,0,,{\rCurrent}And that shit gon pop just like that mother****er that was never 'roun{\rNext}\NDamn, bout to drop, gas 'em up, thick exhaust
+Dialogue: 0,0:01:00.08,0:01:02.98,Default,,0,0,0,,{\rCurrent}Damn, bout to drop, gas 'em up, thick exhaust{\rNext}\NYoung T, came quick, hard to beat, niggas is soft
+Dialogue: 0,0:01:02.98,0:01:06.18,Default,,0,0,0,,{\rCurrent}Young T, came quick, hard to beat, niggas is soft{\rNext}\NWe ain't lyin, we the truth, call him Simba, beats his hooves
+Dialogue: 0,0:01:06.18,0:01:09.12,Default,,0,0,0,,{\rCurrent}We ain't lyin, we the truth, call him Simba, beats his hooves{\rNext}\NTyler the Creator sweatin Jesus juice
+Dialogue: 0,0:01:09.12,0:01:11.44,Default,,0,0,0,,{\rCurrent}Tyler the Creator sweatin Jesus juice{\rNext}\NPut that mother****ing cow on my level, cause I'm raisin the stake
+Dialogue: 0,0:01:11.44,0:01:14.56,Default,,0,0,0,,{\rCurrent}Put that mother****ing cow on my level, cause I'm raisin the stake{\rNext}\NMom I made you a promise, it's no more section 8
+Dialogue: 0,0:01:14.56,0:01:17.60,Default,,0,0,0,,{\rCurrent}Mom I made you a promise, it's no more section 8{\rNext}\NWhen we ate its the steaks, now our section is great
+Dialogue: 0,0:01:17.60,0:01:20.70,Default,,0,0,0,,{\rCurrent}When we ate its the steaks, now our section is great{\rNext}\NCause that's the level I'm at, my niggas pass 'em a plate
+Dialogue: 0,0:01:20.70,0:01:23.76,Default,,0,0,0,,{\rCurrent}Cause that's the level I'm at, my niggas pass 'em a plate{\rNext}\N'Ye!
+Dialogue: 0,0:01:23.76,0:01:24.64,Default,,0,0,0,,{\rCurrent}'Ye!{\rNext}\NWhy, oh why, why, why don't they like me?
+Dialogue: 0,0:01:24.64,0:01:29.12,Default,,0,0,0,,{\rCurrent}Why, oh why, why, why don't they like me?{\rNext}\NCause Nike gave a lot of niggas checks
+Dialogue: 0,0:01:29.12,0:01:31.04,Default,,0,0,0,,{\rCurrent}Cause Nike gave a lot of niggas checks{\rNext}\NBut I'm the only nigga to ever check Nike
+Dialogue: 0,0:01:31.04,0:01:36.50,Default,,0,0,0,,{\rCurrent}But I'm the only nigga to ever check Nike{\rNext}\NRicher than white people with black kids
+Dialogue: 0,0:01:36.50,0:01:39.70,Default,,0,0,0,,{\rCurrent}Richer than white people with black kids{\rNext}\NScarier than black people with ideas
+Dialogue: 0,0:01:39.70,0:01:42.84,Default,,0,0,0,,{\rCurrent}Scarier than black people with ideas{\rNext}\NNobody can tell me where I'm headin
+Dialogue: 0,0:01:42.84,0:01:44.84,Default,,0,0,0,,{\rCurrent}Nobody can tell me where I'm headin{\rNext}\NBut I feel like Michael Jordan, Scottie Pippen at my weddin
+Dialogue: 0,0:01:44.84,0:01:48.03,Default,,0,0,0,,{\rCurrent}But I feel like Michael Jordan, Scottie Pippen at my weddin{\rNext}\NThey say I'm crazy, but that's the best thing goin for me
+Dialogue: 0,0:01:48.03,0:01:51.06,Default,,0,0,0,,{\rCurrent}They say I'm crazy, but that's the best thing goin for me{\rNext}\NYou can't Lynch Marshawn if Tom Brady throwin to me
+Dialogue: 0,0:01:51.06,0:01:53.95,Default,,0,0,0,,{\rCurrent}You can't Lynch Marshawn if Tom Brady throwin to me{\rNext}\NI made a million mistakes, but I'm successful in spite of 'em
+Dialogue: 0,0:01:53.95,0:01:56.77,Default,,0,0,0,,{\rCurrent}I made a million mistakes, but I'm successful in spite of 'em{\rNext}\NI believe you like a fat trainer takin a bite or somethin
+Dialogue: 0,0:01:56.77,0:01:59.84,Default,,0,0,0,,{\rCurrent}I believe you like a fat trainer takin a bite or somethin{\rNext}\NI wanna turn the tanks to playgrounds
+Dialogue: 0,0:01:59.84,0:02:02.10,Default,,0,0,0,,{\rCurrent}I wanna turn the tanks to playgrounds{\rNext}\NI dreamt of 2Pac; he asked me "Are you still down?"
+Dialogue: 0,0:02:02.10,0:02:05.13,Default,,0,0,0,,{\rCurrent}I dreamt of 2Pac; he asked me "Are you still down?"{\rNext}\NYeah my niggas, it's on, it's on, it's on, it's on
+Dialogue: 0,0:02:05.13,0:02:08.45,Default,,0,0,0,,{\rCurrent}Yeah my niggas, it's on, it's on, it's on, it's on{\rNext}\NI know they tell they white daughters "Don't bring home Jerome"
+Dialogue: 0,0:02:08.45,0:02:11.58,Default,,0,0,0,,{\rCurrent}I know they tell they white daughters "Don't bring home Jerome"{\rNext}\NI am the free nigga archetype,I am the light and the beacon
+Dialogue: 0,0:02:11.58,0:02:15.86,Default,,0,0,0,,{\rCurrent}I am the free nigga archetype,I am the light and the beacon{\rNext}\NYou can ask the deacon
+Dialogue: 0,0:02:15.86,0:02:17.67,Default,,0,0,0,,{\rCurrent}You can ask the deacon{\rNext}\NIt's funny, when you get extra money
+Dialogue: 0,0:02:17.67,0:02:20.56,Default,,0,0,0,,{\rCurrent}It's funny, when you get extra money{\rNext}\NEvery joke you tell just be extra funny
+Dialogue: 0,0:02:20.56,0:02:23.30,Default,,0,0,0,,{\rCurrent}Every joke you tell just be extra funny{\rNext}\NI mean, you can even dress extra bummy
+Dialogue: 0,0:02:23.30,0:02:26.10,Default,,0,0,0,,{\rCurrent}I mean, you can even dress extra bummy{\rNext}\N****ing bathroom break, nose extra runny
+Dialogue: 0,0:02:26.10,0:02:28.90,Default,,0,0,0,,{\rCurrent}****ing bathroom break, nose extra runny{\rNext}\NAnd I gave you all I got, you still want extra from me
+Dialogue: 0,0:02:28.90,0:02:31.88,Default,,0,0,0,,{\rCurrent}And I gave you all I got, you still want extra from me{\rNext}\NOxford want a full-blown lecture from me
+Dialogue: 0,0:02:31.88,0:02:34.68,Default,,0,0,0,,{\rCurrent}Oxford want a full-blown lecture from me{\rNext}\NAnd the Lexus pull up, errr, like hop, I hopped out, like wassup?
+Dialogue: 0,0:02:34.68,0:02:38.86,Default,,0,0,0,,{\rCurrent}And the Lexus pull up, errr, like hop, I hopped out, like wassup?{\rNext}\NErr-err-err, step back, hold up, my niggas, you suck, hold up
+Dialogue: 0,0:02:38.86,0:02:49.40,Default,,0,0,0,,{\rCurrent}Err-err-err, step back, hold up, my niggas, you suck, hold up{\rNext}\NI studied the proportions
+Dialogue: 0,0:02:49.40,0:02:50.90,Default,,0,0,0,,{\rCurrent}I studied the proportions{\rNext}\NEmotions runnin at a Autobahn speed-level
+Dialogue: 0,0:02:50.90,0:02:53.50,Default,,0,0,0,,{\rCurrent}Emotions runnin at a Autobahn speed-level{\rNext}\NHad a drink with fear, and I was textin God
+Dialogue: 0,0:02:53.50,0:02:56.38,Default,,0,0,0,,{\rCurrent}Had a drink with fear, and I was textin God{\rNext}\NHe said 'I gave you a big dick, so go extra hard'
+Dialogue: 0,0:02:56.38,0:03:01.61,Default,,0,0,0,,{\rCurrent}He said 'I gave you a big dick, so go extra hard'{\rNext}\NFor your boy
+Dialogue: 0,0:03:01.61,0:03:02.81,Default,,0,0,0,,{\rCurrent}For your boy{\rNext}\NI'm tryna pop the new McLaren with the vertical doors
+Dialogue: 0,0:03:02.81,0:03:05.70,Default,,0,0,0,,{\rCurrent}I'm tryna pop the new McLaren with the vertical doors{\rNext}\NI'm watchin Freak and Geeks, got a trampoline in my room
+Dialogue: 0,0:03:05.70,0:03:09.16,Default,,0,0,0,,{\rCurrent}I'm watchin Freak and Geeks, got a trampoline in my room{\rNext}\NDamn
+Dialogue: 0,0:03:09.16,0:03:11.25,Default,,0,0,0,,{\rCurrent}Damn{\rNext}\N(2, 3, 4)
+Dialogue: 0,0:03:11.25,0:03:12.37,Default,,0,0,0,,{\rCurrent}(2, 3, 4){\rNext}\NHold your ****ing horses, niggas really ****ing thought that T lost it
+Dialogue: 0,0:03:12.37,0:03:17.75,Default,,0,0,0,,{\rCurrent}Hold your ****ing horses, niggas really ****ing thought that T lost it{\rNext}\NLike I bet it at a auction, been exhausted
+Dialogue: 0,0:03:17.75,0:03:20.04,Default,,0,0,0,,{\rCurrent}Like I bet it at a auction, been exhausted{\rNext}\NI been workin while y'all cylinders smoke like broken exhaust tips
+Dialogue: 0,0:03:20.04,0:03:24.02,Default,,0,0,0,,{\rCurrent}I been workin while y'all cylinders smoke like broken exhaust tips{\rNext}\N****ing losers
+Dialogue: 0,0:03:24.02,0:03:26.11,Default,,0,0,0,,{\rCurrent}****ing losers{\rNext}\NHold your ****ing ponies, my homie
+Dialogue: 0,0:03:26.11,0:03:27.93,Default,,0,0,0,,{\rCurrent}Hold your ****ing ponies, my homie{\rNext}\NI'll whip your donkey by my lonely
+Dialogue: 0,0:03:27.93,0:03:29.67,Default,,0,0,0,,{\rCurrent}I'll whip your donkey by my lonely{\rNext}\NI eat niggas like Shoney's (Yeah)
+Dialogue: 0,0:03:29.67,0:03:32.08,Default,,0,0,0,,{\rCurrent}I eat niggas like Shoney's (Yeah){\rNext}\NIt's Tunechi, homie, master of ceremonies
+Dialogue: 0,0:03:32.08,0:03:34.21,Default,,0,0,0,,{\rCurrent}It's Tunechi, homie, master of ceremonies{\rNext}\NI knock 'em down, domino effect; no pepperoni
+Dialogue: 0,0:03:34.21,0:03:37.57,Default,,0,0,0,,{\rCurrent}I knock 'em down, domino effect; no pepperoni{\rNext}\NI swear
+Dialogue: 0,0:03:37.57,0:03:38.50,Default,,0,0,0,,{\rCurrent}I swear{\rNext}\NThis them Golf boys, like them Hot Boy$
+Dialogue: 0,0:03:38.50,0:03:40.49,Default,,0,0,0,,{\rCurrent}This them Golf boys, like them Hot Boy${\rNext}\NFor the nine-nine and two-thousand
+Dialogue: 0,0:03:40.49,0:03:42.99,Default,,0,0,0,,{\rCurrent}For the nine-nine and two-thousand{\rNext}\NBut its the two-thou'
+Dialogue: 0,0:03:42.99,0:03:44.69,Default,,0,0,0,,{\rCurrent}But its the two-thou'{\rNext}\NAnd the one-four, and the one-five
+Dialogue: 0,0:03:44.69,0:03:46.61,Default,,0,0,0,,{\rCurrent}And the one-four, and the one-five{\rNext}\NYo, what up Wayne?
+Dialogue: 0,0:03:46.61,0:03:48.46,Default,,0,0,0,,{\rCurrent}Yo, what up Wayne?{\rNext}\N(What up Slime, niggas go hard)
+Dialogue: 0,0:03:48.46,0:03:50.27,Default,,0,0,0,,{\rCurrent}(What up Slime, niggas go hard){\rNext}\NYeah, I'mma go hard like before came
+Dialogue: 0,0:03:50.27,0:03:52.87,Default,,0,0,0,,{\rCurrent}Yeah, I'mma go hard like before came{\rNext}\NGot too much drive, need like ten lanes
+Dialogue: 0,0:03:52.87,0:03:55.39,Default,,0,0,0,,{\rCurrent}Got too much drive, need like ten lanes{\rNext}\NLife is a broad and she give brain
+Dialogue: 0,0:03:55.39,0:03:57.73,Default,,0,0,0,,{\rCurrent}Life is a broad and she give brain{\rNext}\NThat's that road head (yeah) thats a dream car
+Dialogue: 0,0:03:57.73,0:04:00.11,Default,,0,0,0,,{\rCurrent}That's that road head (yeah) thats a dream car{\rNext}\NGot a full tank of that same year I was born
+Dialogue: 0,0:04:00.11,0:04:03.33,Default,,0,0,0,,{\rCurrent}Got a full tank of that same year I was born{\rNext}\NThat's that one-nine-nine-one
+Dialogue: 0,0:04:03.33,0:04:05.41,Default,,0,0,0,,{\rCurrent}That's that one-nine-nine-one{\rNext}\N'nother nigga like I, you won't find one
+Dialogue: 0,0:04:05.41,0:04:07.91,Default,,0,0,0,,{\rCurrent}'nother nigga like I, you won't find one{\rNext}\NCause ****ing I'm a god, a divine one
+Dialogue: 0,0:04:07.91,0:04:10.85,Default,,0,0,0,,{\rCurrent}Cause ****ing I'm a god, a divine one{\rNext}\NTune
+Dialogue: 0,0:04:10.85,0:04:11.49,Default,,0,0,0,,{\rCurrent}Tune{\rNext}\NMy trigger finger wise but my 9 dumb (Yeah)
+Dialogue: 0,0:04:11.49,0:04:13.95,Default,,0,0,0,,{\rCurrent}My trigger finger wise but my 9 dumb (Yeah){\rNext}\NMiddle finger blind, so its ****ing A-N-Y-one
+Dialogue: 0,0:04:13.95,0:04:17.29,Default,,0,0,0,,{\rCurrent}Middle finger blind, so its ****ing A-N-Y-one{\rNext}\N****ed, skate, and die son; a hundred ways to die so
+Dialogue: 0,0:04:17.29,0:04:20.15,Default,,0,0,0,,{\rCurrent}****ed, skate, and die son; a hundred ways to die so{\rNext}\NI'm starin at a tramp-on-lean, make my eye jump
+Dialogue: 0,0:04:20.15,0:04:23.45,Default,,0,0,0,,{\rCurrent}I'm starin at a tramp-on-lean, make my eye jump{\rNext}\NUse Adderall like alarm clocks, wake my high up
+Dialogue: 0,0:04:23.45,0:04:26.38,Default,,0,0,0,,{\rCurrent}Use Adderall like alarm clocks, wake my high up{\rNext}\NStakes are high; well done, and prime cut, eat up
+Dialogue: 0,0:04:26.38,0:04:29.37,Default,,0,0,0,,{\rCurrent}Stakes are high; well done, and prime cut, eat up{\rNext}\NI stick my rollie in her mouth, let the time come
+Dialogue: 0,0:04:29.37,0:04:31.55,Default,,0,0,0,,{\rCurrent}I stick my rollie in her mouth, let the time come{\rNext}\NShe got hair like Sheneneh, and eyes like Wanda
+Dialogue: 0,0:04:31.55,0:04:35.23,Default,,0,0,0,,{\rCurrent}She got hair like Sheneneh, and eyes like Wanda{\rNext}\NOh my goodness
+Dialogue: 0,0:04:35.23,0:04:36.26,Default,,0,0,0,,{\rCurrent}Oh my goodness{\rNext}\NWayne them niggas ugly
+Dialogue: 0,0:04:36.26,0:04:37.05,Default,,0,0,0,,{\rCurrent}Wayne them niggas ugly{\rNext}\NThese niggas colder than Tommy buddy
+Dialogue: 0,0:04:37.05,0:04:38.99,Default,,0,0,0,,{\rCurrent}These niggas colder than Tommy buddy{\rNext}\N'Ye we hittin models like Tony Parker be hittin bottles
+Dialogue: 0,0:04:38.99,0:04:42.29,Default,,0,0,0,,{\rCurrent}'Ye we hittin models like Tony Parker be hittin bottles{\rNext}\N****ing I'm goin harder than yellow cabbies stoppin for Lionel
+Dialogue: 0,0:04:42.29,0:04:45.37,Default,,0,0,0,,{\rCurrent}****ing I'm goin harder than yellow cabbies stoppin for Lionel{\rNext}\N(Black ass niggas) They be duckin us niggas
+Dialogue: 0,0:04:45.37,0:04:47.47,Default,,0,0,0,,{\rCurrent}(Black ass niggas) They be duckin us niggas{\rNext}\NShout out to Donald Sterling, boy lets get a scrimmage
+Dialogue: 0,0:04:47.47,0:04:50.29,Default,,0,0,0,,{\rCurrent}Shout out to Donald Sterling, boy lets get a scrimmage{\rNext}\NAnd cut some niggas I'll bring the Clippers
+Dialogue: 0,0:04:50.29,0:04:52.23,Default,,0,0,0,,{\rCurrent}And cut some niggas I'll bring the Clippers{\rNext}\NAnd a couple owners that's kinda German
+Dialogue: 0,0:04:52.23,0:04:54.55,Default,,0,0,0,,{\rCurrent}And a couple owners that's kinda German{\rNext}\NYou bring the nooses, and a couple trees
+Dialogue: 0,0:04:54.55,0:04:56.57,Default,,0,0,0,,{\rCurrent}You bring the nooses, and a couple trees{\rNext}\NWhere the money grow, and get bodies burnin
+Dialogue: 0,0:04:56.57,0:04:58.75,Default,,0,0,0,,{\rCurrent}Where the money grow, and get bodies burnin{\rNext}\NCause I'm tryna hang like I'm Mr. Cooper or Jews in Berlin
+Dialogue: 0,0:04:58.75,0:05:02.33,Default,,0,0,0,,{\rCurrent}Cause I'm tryna hang like I'm Mr. Cooper or Jews in Berlin{\rNext}\NOr some niggas from Alabama, Birmingham
+Dialogue: 0,0:05:02.33,0:05:05.15,Default,,0,0,0,,{\rCurrent}Or some niggas from Alabama, Birmingham{\rNext}\NI need music so I'm over the street like Erick Sermon was
+Dialogue: 0,0:05:05.15,0:05:09.15,Default,,0,0,0,,{\rCurrent}I need music so I'm over the street like Erick Sermon was{\rNext}\N****ing us, maybe we should team up
+Dialogue: 0,0:05:09.15,0:05:11.41,Default,,0,0,0,,{\rCurrent}****ing us, maybe we should team up{\rNext}\NAnti-Golf boys, cuz I don't **** with me either
+Dialogue: 0,0:05:11.41,0:05:14.37,Default,,0,0,0,,{\rCurrent}Anti-Golf boys, cuz I don't **** with me either{\rNext}\NI'm a liar, I'm a nigga, uhh...
+Dialogue: 0,0:05:14.37,0:05:16.35,Default,,0,0,0,,{\rCurrent}I'm a liar, I'm a nigga, uhh...{\rNext}\NSon you need Jesus
+Dialogue: 0,0:05:16.35,0:05:17.75,Default,,0,0,0,,{\rCurrent}Son you need Jesus{\rNext}\NBut I heard he left Sunset to go on tour with Yeezus
+Dialogue: 0,0:05:17.75,0:05:21.06,Default,,0,0,0,,{\rCurrent}But I heard he left Sunset to go on tour with Yeezus{\rNext}\NWell, I'm prayin for the new Yeezys
+Dialogue: 0,0:05:21.06,0:05:24.25,Default,,0,0,0,,{\rCurrent}Well, I'm prayin for the new Yeezys{\rNext}\NAnd you niggas prayin that we squash the beef like zucchini
+Dialogue: 0,0:05:24.25,0:05:27.57,Default,,0,0,0,,{\rCurrent}And you niggas prayin that we squash the beef like zucchini{\rNext}\NI know; it ain't gain, nor fame, nor tame, or lame, nor strange
+Dialogue: 0,0:05:27.57,0:05:32.05,Default,,0,0,0,,{\rCurrent}I know; it ain't gain, nor fame, nor tame, or lame, nor strange{\rNext}\NNah niggas, it's Golf Wang
+Dialogue: 0,0:05:32.05,0:06:40.51,Default,,0,0,0,,{\rCurrent}Nah niggas, it's Golf Wang
+Dialogue: 0,0:06:40.51,0:06:45.51,Default,,0,0,0,,{\rCurrent}
