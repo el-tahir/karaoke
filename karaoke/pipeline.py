@@ -1,3 +1,5 @@
+# /karaoke/pipeline.py
+
 """Core karaoke pipeline orchestration."""
 from __future__ import annotations
 
@@ -51,6 +53,9 @@ class KaraokePipeline:
         self.artist = self.artist or ""
 
     def run(self) -> Tuple[Path, Path]:
+        """
+        Executes the full pipeline without streaming progress. For CLI use.
+        """
         self._resolve_audio()
         lrc_path = k_lyrics.fetch_lrc(self.track, self.artist, config.LYRICS_DIR)
         instrumental_path, _ = k_separate.separate(self.audio_path, config.STEMS_DIR)
@@ -63,12 +68,18 @@ class KaraokePipeline:
         output_path = config.OUTPUT_DIR / video_name
         full_output_path = config.OUTPUT_DIR / (output_path.stem + "_full" + output_path.suffix)
 
+        # Build karaoke video (instrumental)
         k_video.build_video(instrumental_path, ass_path, output_path, self.resolution, self.background)
+        # Build full song video (original audio)
         k_video.build_video(self.audio_path, ass_path, full_output_path, self.resolution, self.background)
 
         return output_path, full_output_path
 
     def run_streaming(self) -> Generator[str, None, None]:
+        """
+        Executes the full pipeline, yielding progress updates. For API use.
+        Each step is performed ONLY ONCE.
+        """
         def _sse(event: str, message: str, data: Optional[Dict[str, Any]] = None) -> str:
             payload = {"event": event, "message": message, "data": data or {}}
             return f"data: {json.dumps(payload)}\n\n"
@@ -76,24 +87,41 @@ class KaraokePipeline:
         try:
             yield _sse("start", "Pipeline initiated...")
             
+            # Step 1: Audio
             yield _sse("audio:start", "Resolving audio source...")
             self._resolve_audio()
             yield _sse("audio:done", f"Using audio: {self.audio_path.name}")
 
+            # Step 2: Lyrics
             yield _sse("lyrics:start", "Fetching lyrics...")
             lrc_path = k_lyrics.fetch_lrc(self.track, self.artist, config.LYRICS_DIR)
             yield _sse("lyrics:done", f"Lyrics downloaded: {lrc_path.name}")
 
+            # Step 3: Separation
             yield _sse("separation:start", "Separating vocals...")
             instrumental_path, _ = k_separate.separate(self.audio_path, config.STEMS_DIR)
             yield _sse("separation:done", f"Instrumental created: {instrumental_path.name}")
 
+            # Step 4: Subtitles
             yield _sse("subtitles:start", "Generating subtitles...")
             ass_path = k_subs.lrc_to_ass(lrc_path, config.SUBS_DIR / lrc_path.with_suffix(".ass").name)
             yield _sse("subtitles:done", f"Subtitles generated: {ass_path.name}")
 
+            # Step 5: Video Rendering
             yield _sse("video:start", "Rendering videos...")
-            output_path, full_output_path = self.run()
+            
+            safe_track = k_meta.sanitize_filename(self.track or "output")
+            safe_artist = k_meta.sanitize_filename(self.artist or "")
+            video_name = f"{safe_artist} - {safe_track}.mp4" if safe_artist else f"{safe_track}.mp4"
+            
+            output_path = config.OUTPUT_DIR / video_name
+            full_output_path = config.OUTPUT_DIR / (output_path.stem + "_full" + output_path.suffix)
+            
+            # Build karaoke video (instrumental)
+            k_video.build_video(instrumental_path, ass_path, output_path, self.resolution, self.background)
+            # Build full song video (original audio)
+            k_video.build_video(self.audio_path, ass_path, full_output_path, self.resolution, self.background)
+            
             yield _sse("video:done", "Videos rendered.")
 
             final_data = {
