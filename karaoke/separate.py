@@ -1,117 +1,171 @@
 """Vocal separation utility.
 
-Uses the `audio-separator` library (UVR-MDX models) to split an audio file
-into instrumental and vocal stems. The instrumental file is persisted for
-later use in video generation.
-
-CLI Usage
----------
-python -m karaoke.separate --file "song.mp3" [--output-dir ./stems]
-
-or using the metadata file from `karaoke.input`:
-python -m karaoke.separate --meta "song.meta.txt" [--output-dir ./stems]
+Uses the `audio-separator` library to split an audio file into instrumental and vocal stems.
 """
 from __future__ import annotations
 
-import argparse
-import sys
 from pathlib import Path
 from typing import Tuple
+import shutil
+import logging
+import os
 
-try:
-    from audio_separator.separator import Separator  # type: ignore
-except ImportError as err:  # pragma: no cover
-    print("audio-separator is not installed. Run `pip install audio-separator`.", file=sys.stderr)
-    raise err
+from audio_separator.separator import Separator
 
-from .input import validate_audio_file, parse_args as _unused  # for type reuse
+from . import config
+from .cache import cache_manager
 
-DEFAULT_OUTPUT_DIR = Path("stems")
+logger = logging.getLogger(__name__)
 
-
-def separate(audio_path: Path, output_dir: Path = DEFAULT_OUTPUT_DIR) -> Tuple[Path, Path]:
+def separate(audio_path: Path, output_dir: Path = config.STEMS_DIR) -> Tuple[Path, Path]:
     """Run audio separation and return (instrumental_path, vocals_path)."""
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    # `audio-separator` expects `output_dir` and `output_format` as constructor
-    # arguments.  Passing them here avoids mismatching positional parameters
-    # in the `.separate()` call (which takes only the audio path).
-    separator = Separator(output_dir=str(output_dir))
-    separator.load_model()  # downloads model on first run if needed
-
-    # Returns a list/tuple [instrumental_path, vocals_path]
-    result_paths = separator.separate(str(audio_path))
-    if not isinstance(result_paths, (list, tuple)) or len(result_paths) != 2:
-        raise RuntimeError("Unexpected result from audio-separator: " f"{result_paths}")
-
-    instrumental_path, vocals_path = result_paths
-
-    # The `audio-separator` library sometimes returns file paths without the
-    # output directory prefix (i.e. just the basename). This causes downstream
-    # consumers to fail when they try to access the file from a different
-    # working directory.  Normalise the returned paths so that they are always
-    # absolute (or at least include the provided `output_dir`).
-
-    instrumental_path = Path(instrumental_path)
-    vocals_path = Path(vocals_path)
-
-    if not instrumental_path.is_absolute():
-        instrumental_path = output_dir / instrumental_path
-    if not vocals_path.is_absolute():
-        vocals_path = output_dir / vocals_path
-
-    # Resolve to eliminate any "../" components and get a consistent absolute
-    # representation.  We deliberately *do not* enforce the paths to exist
-    # here, because the caller may want to mock the separator during tests.
-    instrumental_path = instrumental_path.expanduser().resolve()
-    vocals_path = vocals_path.expanduser().resolve()
-
-    print("Instrumental saved to:", instrumental_path)
-    print("Vocals saved to:", vocals_path)
-
-    return instrumental_path, vocals_path
-
-
-def _parse_meta(meta_path: Path) -> Path:
-    text = meta_path.read_text(encoding="utf-8")
-    values: dict[str, str] = {}
-    for line in text.splitlines():
-        if "=" in line:
-            k, v = line.split("=", 1)
-            values[k.strip()] = v.strip()
-    file_path = values.get("file")
-    if not file_path:
-        raise ValueError("meta file missing 'file=' entry")
-    return Path(file_path)
-
-
-def parse_args(argv: list[str] | None = None) -> argparse.Namespace:  # pragma: no cover
-    p = argparse.ArgumentParser(description="Separate vocals and instrumentals using audio-separator")
-    group = p.add_mutually_exclusive_group(required=True)
-    group.add_argument("--file", help="Path to an audio file to process")
-    group.add_argument("--meta", help="Path to .meta.txt from karaoke.input")
-    p.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR), help="Directory to save stems")
-    return p.parse_args(argv)
-
-
-def main(argv: list[str] | None = None) -> None:  # pragma: no cover
-    args = parse_args(argv)
-
-    if args.meta:
-        meta_path = Path(args.meta).expanduser().resolve()
-        if not meta_path.exists():
-            print(f"Meta file not found: {meta_path}", file=sys.stderr)
-            sys.exit(1)
-        audio_path = _parse_meta(meta_path)
-    else:
-        audio_path = validate_audio_file(args.file)
-
+    # Check cache first (with error handling)
     try:
-        separate(audio_path, Path(args.output_dir))
-    except Exception as err:
-        print("Error during separation:", err, file=sys.stderr)
-        sys.exit(1)
+        cached_stems = cache_manager.get_cached_stems(audio_path)
+        if cached_stems:
+            return cached_stems
+    except (FileNotFoundError, RuntimeError) as e:
+        logger.warning(f"Cache check failed, proceeding with separation: {e}")
+    
+    # Ensure output directory exists
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Store current working directory to restore later
+    original_cwd = Path.cwd()
+    
+    try:
+        # Change to output directory to ensure files are saved there
+        os.chdir(str(output_dir))
+        
+        separator = Separator(output_dir=str(output_dir))
+        separator.load_model()
 
+        # Log before separation to help debug file locations
+        logger.info(f"Running separation with output_dir: {output_dir}")
+        logger.info(f"Current working directory: {Path.cwd()}")
+        logger.info(f"Audio file: {audio_path}")
 
-if __name__ == "__main__":  # pragma: no cover
-    main() 
+        result_paths = separator.separate(str(audio_path))
+        if not isinstance(result_paths, (list, tuple)) or len(result_paths) != 2:
+            raise RuntimeError(f"Unexpected result from audio-separator: {result_paths}")
+
+        instrumental_path, vocals_path = result_paths
+        
+        # Log what the separator returned
+        logger.info(f"Separator returned paths: {result_paths}")
+        
+        # Convert to Path objects
+        instrumental_path = Path(instrumental_path)
+        vocals_path = Path(vocals_path)
+        
+        # Find the actual files - they might be in various locations
+        possible_locations = [
+            output_dir,  # Where we want them
+            original_cwd,  # Project root
+            Path.cwd(),   # Current directory (output_dir)
+            Path(audio_path).parent,  # Same directory as source audio
+        ]
+        
+        # Debug: List all .wav files in each location
+        for i, location in enumerate(possible_locations):
+            if location.exists():
+                wav_files = list(location.glob("*.wav"))
+                logger.info(f"Location {i} ({location}): {[f.name for f in wav_files]}")
+            else:
+                logger.info(f"Location {i} ({location}): does not exist")
+        
+        actual_instrumental = None
+        actual_vocals = None
+        
+        # Search for instrumental file
+        for location in possible_locations:
+            candidate = location / instrumental_path.name
+            if candidate.exists():
+                actual_instrumental = candidate.resolve()
+                break
+        
+        # Search for vocals file  
+        for location in possible_locations:
+            candidate = location / vocals_path.name
+            if candidate.exists():
+                actual_vocals = candidate.resolve()
+                break
+        
+        # Validate we found the files
+        if not actual_instrumental:
+            # Try some common variations
+            base_name = audio_path.stem
+            common_patterns = [
+                f"{base_name}*(Instrumental)*.wav",
+                f"*{base_name}*(Instrumental)*.wav",
+                f"*Instrumental*.wav"
+            ]
+            
+            for location in possible_locations:
+                for pattern in common_patterns:
+                    candidates = list(location.glob(pattern))
+                    if candidates:
+                        actual_instrumental = candidates[0].resolve()
+                        break
+                if actual_instrumental:
+                    break
+            
+            if not actual_instrumental:
+                raise RuntimeError(f"Instrumental file not found in any expected location. Searched: {[str(loc) for loc in possible_locations]}")
+        
+        if not actual_vocals:
+            # Try some common variations
+            base_name = audio_path.stem
+            common_patterns = [
+                f"{base_name}*(Vocals)*.wav",
+                f"*{base_name}*(Vocals)*.wav", 
+                f"*Vocals*.wav"
+            ]
+            
+            for location in possible_locations:
+                for pattern in common_patterns:
+                    candidates = list(location.glob(pattern))
+                    if candidates:
+                        actual_vocals = candidates[0].resolve()
+                        break
+                if actual_vocals:
+                    break
+            
+            if not actual_vocals:
+                raise RuntimeError(f"Vocals file not found in any expected location. Searched: {[str(loc) for loc in possible_locations]}")
+
+        # Move files to correct output directory if they're not already there
+        target_instrumental = output_dir / actual_instrumental.name
+        target_vocals = output_dir / actual_vocals.name
+        
+        if actual_instrumental != target_instrumental:
+            if target_instrumental.exists():
+                target_instrumental.unlink()  # Remove existing file
+            shutil.move(str(actual_instrumental), str(target_instrumental))
+            actual_instrumental = target_instrumental
+            
+        if actual_vocals != target_vocals:
+            if target_vocals.exists():
+                target_vocals.unlink()  # Remove existing file
+            shutil.move(str(actual_vocals), str(target_vocals))
+            actual_vocals = target_vocals
+
+        print("Instrumental saved to:", actual_instrumental)
+        print("Vocals saved to:", actual_vocals)
+
+        # Final validation
+        if not actual_instrumental.exists() or not actual_vocals.exists():
+            raise RuntimeError("Failed to properly save separated audio files")
+
+        # Cache the separated stems (with error handling)
+        try:
+            cache_manager.cache_stems(audio_path, actual_instrumental, actual_vocals)
+        except (FileNotFoundError, RuntimeError) as e:
+            logger.warning(f"Failed to cache stems, but separation was successful: {e}")
+
+        return actual_instrumental, actual_vocals
+        
+    finally:
+        # Always restore the original working directory
+        os.chdir(str(original_cwd))
+ 

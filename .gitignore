@@ -40,6 +40,7 @@ build/
 downloads/
 output_videos/
 stems/
+.cache/
 
 # Frontend build output
 karaoke-ui/.next/

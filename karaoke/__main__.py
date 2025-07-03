@@ -1,188 +1,107 @@
-from __future__ import annotations
+"""Karaoke-O-Matic CLI
 
-"""karaoke.__main__
-
-End-to-end pipeline that orchestrates the complete karaoke video generation
-workflow.
-
-This script wires together the previously implemented modules:
-
-1. `karaoke.input`      – Handle audio source (local file or YouTube) and metadata
-2. `karaoke.lyrics`     – Fetch time-synchronised LRC lyrics
-3. `karaoke.separate`   – Separate vocals to obtain an instrumental track
-4. `karaoke.subtitles`  – Convert the LRC file to ASS subtitles with \K tags
-5. `karaoke.video`      – Burn subtitles onto a coloured background to create
-   the final MP4 video
-
-CLI Usage (examples)
---------------------
-python -m karaoke --file "song.mp3" --track "Song Title" --artist "Artist"
-python -m karaoke --youtube-url "https://youtu.be/xyz" --track "Song" --artist "Artist"
+End-to-end pipeline for generating karaoke videos.
 """
-
 import argparse
 import sys
-from pathlib import Path
 
-from . import input as kinput
-from . import lyrics as klyrics
-from . import separate as kseparate
-from . import subtitles as ksubs
-from . import video as kvideo
+from .pipeline import KaraokePipeline
+from . import config
+from .cache_cli import print_cache_stats, clear_cache, list_cache_contents, test_cache, test_separation
 
-# Default output directories (mirroring those in the dedicated modules)
-LYRICS_DIR = klyrics.DEFAULT_OUTPUT_DIR
-SUBS_DIR = ksubs.DEFAULT_OUTPUT_DIR
-STEMS_DIR = kseparate.DEFAULT_OUTPUT_DIR
-
-
-def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:  # pragma: no cover
-    """Aggregate CLI covering the options of all sub-steps."""
-    p = argparse.ArgumentParser(description="Run the full karaoke pipeline on a song.")
-
-    # Audio source options – none required now. If neither provided, the pipeline
-    # will attempt to search YouTube based on the provided track/artist metadata.
-    g = p.add_mutually_exclusive_group(required=False)
+def main(argv: list[str] | None = None) -> None:
+    p = argparse.ArgumentParser(description="Run the full karaoke pipeline or manage cache.")
+    subparsers = p.add_subparsers(dest="command", help="Available commands")
+    
+    # Pipeline command (default)
+    pipeline_parser = subparsers.add_parser("run", help="Run the karaoke pipeline")
+    
+    g = pipeline_parser.add_mutually_exclusive_group()
     g.add_argument("--file", help="Path to a local audio file")
     g.add_argument("--youtube-url", help="YouTube URL to download audio from")
 
-    # Optional metadata if it cannot be inferred from the filename
-    p.add_argument("--track", help="Track title (optional – inferred from filename if possible)")
-    p.add_argument("--artist", help="Artist name (optional – inferred from filename if possible)")
+    pipeline_parser.add_argument("--track", help="Track title")
+    pipeline_parser.add_argument("--artist", help="Artist name")
+    pipeline_parser.add_argument("--resolution", default=config.DEFAULT_RESOLUTION, help="Video resolution (e.g., 1280x720)")
+    pipeline_parser.add_argument("--background", default=config.DEFAULT_BACKGROUND, help="Background color")
+    pipeline_parser.add_argument("--no-cache", action="store_true", help="Disable caching for this run")
+    
+    # Cache management commands
+    cache_parser = subparsers.add_parser("cache", help="Manage cache")
+    cache_subparsers = cache_parser.add_subparsers(dest="cache_command", help="Cache commands")
+    
+    cache_subparsers.add_parser("stats", help="Show cache statistics")
+    
+    clear_parser = cache_subparsers.add_parser("clear", help="Clear cache")
+    clear_parser.add_argument("--type", choices=["audio", "stems", "lyrics", "subtitles", "videos"],
+                             help="Specific cache type to clear (clears all if not specified)")
+    
+    list_parser = cache_subparsers.add_parser("list", help="List cache contents")
+    list_parser.add_argument("type", choices=["audio", "stems", "lyrics", "subtitles", "videos"],
+                            help="Cache type to list")
+    
+    cache_subparsers.add_parser("test", help="Test cache functionality")
+    
+    debug_parser = cache_subparsers.add_parser("debug-separation", help="Test audio separation with debugging")
+    debug_parser.add_argument("audio_file", help="Path to audio file to test")
 
-    # Video generation options (subset – background image support is Task 9)
-    p.add_argument("--resolution", default=kvideo.DEFAULT_RES, help="Video resolution WIDTHxHEIGHT (default 1280x720)")
-    p.add_argument("--background", default=kvideo.DEFAULT_BG, help="Background colour (default black)")
+    args = p.parse_args(argv)
 
-    # Additional output: full-song video (instrumental + vocals)
-    p.add_argument(
-        "--full-output",
-        default=None,
-        help="If provided, also generate a video with the original full song audio at this path (default adds '_full' before the .mp4 extension of --output).",
-    )
-
-    # Output locations
-    p.add_argument(
-        "--output",
-        default=None,
-        help="Path for the generated MP4 video (default is '<Artist> - <Track>.mp4')",
-    )
-
-    return p.parse_args(argv)
-
-
-def run_pipeline(args: argparse.Namespace) -> tuple[Path, Path]:
-    """Execute the pipeline and return the final video paths."""
-
-    # 1. Resolve / download audio & gather metadata -----------------------------------
-    track: str | None = args.track
-    artist: str | None = args.artist
-
-    # If an explicit audio source is provided, validate / download it first.
-    if args.youtube_url:
-        audio_path = kinput.download_from_youtube(args.youtube_url)
-    elif args.file:
-        audio_path = kinput.validate_audio_file(args.file)
-    else:
-        # No explicit source – we require at least the track name to search YouTube.
-        if not track:
-            raise RuntimeError("When neither --file nor --youtube-url is provided, you must supply --track (and optionally --artist) so the pipeline can search YouTube.")
-
-        # Build a YouTube search query and let yt-dlp fetch the first result.
-        search_query = track if artist is None else f"{track} {artist}"
-        yt_search_url = f"ytsearch1:{search_query} audio"
-        print(f"🔍 Searching YouTube for: {search_query}")
-        audio_path = kinput.download_from_youtube(yt_search_url)
-
-    # If metadata still missing, try to infer it from the downloaded/validated filename.
-    if not track or not artist:
-        inferred_track, inferred_artist = kinput._infer_metadata_from_filename(audio_path)  # type: ignore
-        track = track or inferred_track
-        artist = artist or inferred_artist
-
-    if not track or not artist:
-        raise RuntimeError(
-            "Could not determine both track and artist metadata. Please supply --track and --artist or use a filename in the form 'Artist - Track.ext'."
-        )
-
-    # 2. Fetch lyrics ------------------------------------------------------------------
-    try:
-        lrc_path = klyrics.fetch_lrc(track, artist, LYRICS_DIR)  # type: ignore[arg-type]
-    except Exception as exc:
-        raise RuntimeError(f"Lyrics fetching failed: {exc}") from exc
-
-    # 3. Separate vocals ---------------------------------------------------------------
-    try:
-        instrumental_path, _ = kseparate.separate(audio_path, STEMS_DIR)
-    except Exception as exc:
-        raise RuntimeError(f"Audio separation failed: {exc}") from exc
-
-    # 4. Generate ASS subtitles --------------------------------------------------------
-    ass_name = lrc_path.with_suffix(".ass").name
-    ass_path = SUBS_DIR / ass_name
-    try:
-        ksubs.lrc_to_ass(lrc_path, ass_path)
-    except Exception as exc:
-        raise RuntimeError(f"Subtitle generation failed: {exc}") from exc
-
-    # 5. Build final video -------------------------------------------------------------
-    if args.output:
-        output_path = Path(args.output).expanduser().resolve()
-    else:
-        # Fallback naming based on metadata – ensure no illegal filesystem chars
-        from .lyrics import sanitize_filename  # re-use helper
-
-        safe_track = sanitize_filename(track or "output")
-        safe_artist = sanitize_filename(artist or "")
-        if safe_artist:
-            fname = f"{safe_artist} - {safe_track}.mp4"
+    # Handle cache commands
+    if args.command == "cache":
+        if args.cache_command == "stats":
+            print_cache_stats()
+        elif args.cache_command == "clear":
+            clear_cache(args.type)
+        elif args.cache_command == "list":
+            list_cache_contents(args.type)
+        elif args.cache_command == "test":
+            test_cache()
+        elif args.cache_command == "debug-separation":
+            test_separation(args.audio_file)
         else:
-            fname = f"{safe_track}.mp4"
-        output_path = Path(fname).expanduser().resolve()
-
-    # Build karaoke (instrumental) video
-    try:
-        kvideo.build_video(
-            instrumental_path,
-            ass_path,
-            output_path,
-            resolution=args.resolution,
-            background_color=args.background,
-        )
-    except Exception as exc:
-        raise RuntimeError(f"Karaoke video generation failed: {exc}") from exc
-
-    # Determine full-song output path (original audio with vocals)
-    if args.full_output:
-        full_output_path = Path(args.full_output).expanduser().resolve()
+            cache_parser.print_help()
+        return
+    
+    # Handle pipeline command (default if no command specified)
+    if args.command is None or args.command == "run":
+        # Use pipeline_parser args if we're in a subcommand, otherwise use main args
+        if args.command == "run":
+            pipeline_args = args
+        else:
+            # For backward compatibility, treat no subcommand as run command
+            # Re-parse with pipeline parser to get all the pipeline-specific args
+            pipeline_args = pipeline_parser.parse_args(argv or sys.argv[1:])
+        
+        try:
+            # Temporarily disable caching if requested
+            if getattr(pipeline_args, 'no_cache', False):
+                original_cache_setting = config.ENABLE_CACHE
+                config.ENABLE_CACHE = False
+                print("🚫 Caching disabled for this run")
+            
+            pipeline = KaraokePipeline(
+                track=getattr(pipeline_args, 'track', None),
+                artist=getattr(pipeline_args, 'artist', None),
+                file_path=getattr(pipeline_args, 'file', None),
+                youtube_url=getattr(pipeline_args, 'youtube_url', None),
+                resolution=getattr(pipeline_args, 'resolution', config.DEFAULT_RESOLUTION),
+                background=getattr(pipeline_args, 'background', config.DEFAULT_BACKGROUND),
+            )
+            karaoke_video, full_video = pipeline.run()
+            print(f"✅ Karaoke video created: {karaoke_video}")
+            print(f"✅ Full-song video created: {full_video}")
+            
+            # Restore original cache setting
+            if getattr(pipeline_args, 'no_cache', False):
+                config.ENABLE_CACHE = original_cache_setting
+                
+        except Exception as e:
+            print(f"❌ Pipeline failed: {e}", file=sys.stderr)
+            sys.exit(1)
     else:
-        full_output_path = output_path.with_name(output_path.stem + "_full" + output_path.suffix)
+        p.print_help()
 
-    # Build full-song video
-    try:
-        kvideo.build_video(
-            audio_path,
-            ass_path,
-            full_output_path,
-            resolution=args.resolution,
-            background_color=args.background,
-        )
-    except Exception as exc:
-        raise RuntimeError(f"Full-song video generation failed: {exc}") from exc
-
-    return output_path, full_output_path
-
-
-def main(argv: list[str] | None = None) -> None:  # pragma: no cover
-    args = _parse_args(argv)
-    try:
-        final_video, full_video = run_pipeline(args)
-        print(f"✅ Karaoke video created: {final_video}")
-        print(f"✅ Full-song video created: {full_video}")
-    except Exception as err:
-        print(f"❌ Pipeline failed: {err}", file=sys.stderr)
-        sys.exit(1)
-
-
-if __name__ == "__main__":  # pragma: no cover
-    main() 
+if __name__ == "__main__":
+    main()
+ 
