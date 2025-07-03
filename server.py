@@ -11,8 +11,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-from karaoke.api_pipeline import run_pipeline_streaming
-
 # Directory where rendered videos are stored – must match api_pipeline.OUTPUT_DIR
 OUTPUT_DIR = Path("output_videos")
 OUTPUT_DIR.mkdir(exist_ok=True)
@@ -55,6 +53,9 @@ async def generate_karaoke(
         resolution=None,
         background=None,
     )
+
+    # Lazy-import to avoid long startup times
+    from karaoke.api_pipeline import run_pipeline_streaming  # noqa: WPS433 – runtime import
 
     generator = run_pipeline_streaming(args)
     return StreamingResponse(generator, media_type="text/event-stream")
