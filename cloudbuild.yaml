@@ -48,9 +48,9 @@ steps:
   args:
     - "-c"
     - |
-      BACKEND_URL=$(gcloud run services describe karaoke-backend --region=${_REGION} --format="value(status.url)")
-      echo "Backend URL: $BACKEND_URL"
-      echo "$BACKEND_URL" > /workspace/backend_url.txt
+      BACKEND_URL=$$(gcloud run services describe karaoke-backend --region=${_REGION} --format="value(status.url)")
+      echo "Backend URL: $$BACKEND_URL"
+      echo "$$BACKEND_URL" > /workspace/backend_url.txt
   waitFor: ["deploy-backend"]
 
 # -------- Frontend --------
@@ -60,10 +60,10 @@ steps:
   args:
     - "-c"
     - |
-      BACKEND_URL=$(cat /workspace/backend_url.txt)
+      BACKEND_URL=$$(cat /workspace/backend_url.txt)
       docker build \
         -f karaoke-ui/Dockerfile \
-        --build-arg NEXT_PUBLIC_API_BASE_URL="$BACKEND_URL" \
+        --build-arg NEXT_PUBLIC_API_BASE_URL="$$BACKEND_URL" \
         -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/frontend:$SHORT_SHA \
         karaoke-ui
   waitFor: ["get-backend-url"]
