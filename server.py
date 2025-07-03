@@ -35,7 +35,8 @@ if frontend_url:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Temporarily allow all origins for debugging
+    allow_origins=allowed_origins,  # Explicitly declared origins
+    allow_origin_regex=r"https://.*\\.run\\.app",  # Fallback for other Cloud Run previews
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
