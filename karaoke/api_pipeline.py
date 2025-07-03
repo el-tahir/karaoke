@@ -48,7 +48,23 @@ def run_pipeline_streaming(args: argparse.Namespace) -> Generator[str, None, Non
         artist: str | None = args.artist
 
         if args.youtube_url:
-            audio_path = kinput.download_from_youtube(args.youtube_url)
+            try:
+                audio_path = kinput.download_from_youtube(args.youtube_url)
+            except Exception as e:
+                error_msg = str(e)
+                if "Sign in to confirm you're not a bot" in error_msg or "bot" in error_msg.lower():
+                    user_friendly_msg = (
+                        "YouTube has blocked this request due to bot detection. "
+                        "This is common on cloud servers. Please try: "
+                        "1) A different YouTube URL, "
+                        "2) Upload an audio file directly, or "
+                        "3) Try again later as restrictions may be temporary."
+                    )
+                    yield _sse("error", user_friendly_msg, {"technical_detail": error_msg, "error_type": "youtube_blocked"})
+                    return
+                else:
+                    # Re-raise other YouTube errors as-is
+                    raise
         elif args.file:
             audio_path = kinput.validate_audio_file(args.file)
         else:
@@ -56,7 +72,20 @@ def run_pipeline_streaming(args: argparse.Namespace) -> Generator[str, None, Non
                 raise RuntimeError("When neither --file nor --youtube-url is provided, you must supply --track (and optionally --artist) so the pipeline can search YouTube.")
             search_query = track if artist is None else f"{track} {artist}"
             yt_search_url = f"ytsearch1:{search_query} audio"
-            audio_path = kinput.download_from_youtube(yt_search_url)
+            try:
+                audio_path = kinput.download_from_youtube(yt_search_url)
+            except Exception as e:
+                error_msg = str(e)
+                if "Sign in to confirm you're not a bot" in error_msg or "bot" in error_msg.lower():
+                    user_friendly_msg = (
+                        f"YouTube search for '{search_query}' was blocked due to bot detection. "
+                        "Please provide a direct YouTube URL or upload an audio file instead."
+                    )
+                    yield _sse("error", user_friendly_msg, {"technical_detail": error_msg, "error_type": "youtube_search_blocked"})
+                    return
+                else:
+                    # Re-raise other YouTube errors as-is
+                    raise
 
         logger.info("Audio source resolved → %s", audio_path)
         yield _sse("audio:done", f"Using audio: {audio_path.name}")

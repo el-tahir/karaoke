@@ -17,6 +17,8 @@ import argparse
 import sys
 from pathlib import Path
 from typing import Tuple, Optional
+import random
+import time
 
 # Supported audio extensions (case-insensitive)
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".flac", ".aac", ".m4a", ".ogg"}
@@ -65,10 +67,14 @@ def download_from_youtube(url: str, output_dir: Path = DOWNLOADS_DIR) -> Path:
     # Template: use video title as filename with .mp3 extension
     outtmpl = str(output_dir / "%(title)s.%(ext)s")
 
+    # Add random delay to avoid rapid-fire requests
+    time.sleep(random.uniform(1, 3))
+
     ydl_opts = {
         "format": "bestaudio/best",
         "outtmpl": outtmpl,
         "quiet": True,
+        # Bot detection evasion
         "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
         "http_headers": {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -77,10 +83,20 @@ def download_from_youtube(url: str, output_dir: Path = DOWNLOADS_DIR) -> Path:
             "DNT": "1",
             "Connection": "keep-alive",
             "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1",
+            "Cache-Control": "max-age=0",
         },
         "extractor_retries": 3,
         "fragment_retries": 3,
         "retry_sleep_functions": {"http": lambda n: 2 ** n},
+        # Additional anti-bot measures
+        "sleep_interval_requests": random.uniform(1, 2),
+        "sleep_interval_subtitles": random.uniform(0.5, 1.5),
+        "socket_timeout": 30,
+        "retries": 5,
         "postprocessors": [
             {
                 "key": "FFmpegExtractAudio",
