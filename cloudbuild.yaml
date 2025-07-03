@@ -6,11 +6,12 @@
 # -------------------------------------------------------------
 # Allow custom substitutions without needing the "${_VAR:-default}" syntax
 options:
+  logging: CLOUD_LOGGING_ONLY
   substitution_option: ALLOW_LOOSE
 
 # Change these via build‐trigger substitutions if desired
 substitutions:
-  _REGION: us-central1          # Cloud Run/Artifact Registry region
+  _REGION: us-east4        # Cloud Run/Artifact Registry region
   _REPOSITORY: karaoke          # Artifact Registry repository name
 
 # Build → Push → Deploy for both services
