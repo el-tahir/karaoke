@@ -49,7 +49,9 @@ def run_pipeline_streaming(args: argparse.Namespace) -> Generator[str, None, Non
 
         if args.youtube_url:
             try:
-                audio_path = kinput.download_from_youtube(args.youtube_url)
+                # Check if cookies are provided in args
+                cookies = getattr(args, 'cookies', None)
+                audio_path = kinput.download_from_youtube(args.youtube_url, cookies=cookies)
             except Exception as e:
                 error_msg = str(e)
                 if "Sign in to confirm you're not a bot" in error_msg or "bot" in error_msg.lower():
@@ -73,7 +75,9 @@ def run_pipeline_streaming(args: argparse.Namespace) -> Generator[str, None, Non
             search_query = track if artist is None else f"{track} {artist}"
             yt_search_url = f"ytsearch1:{search_query} audio"
             try:
-                audio_path = kinput.download_from_youtube(yt_search_url)
+                # Check if cookies are provided in args
+                cookies = getattr(args, 'cookies', None)
+                audio_path = kinput.download_from_youtube(yt_search_url, cookies=cookies)
             except Exception as e:
                 error_msg = str(e)
                 if "Sign in to confirm you're not a bot" in error_msg or "bot" in error_msg.lower():

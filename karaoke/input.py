@@ -19,6 +19,8 @@ from pathlib import Path
 from typing import Tuple, Optional
 import random
 import time
+import os
+import tempfile
 
 # Supported audio extensions (case-insensitive)
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".flac", ".aac", ".m4a", ".ogg"}
@@ -58,8 +60,14 @@ def validate_audio_file(path_str: str) -> Path:
     return path
 
 
-def download_from_youtube(url: str, output_dir: Path = DOWNLOADS_DIR) -> Path:
-    """Download audio from a YouTube URL using yt-dlp and return the file path."""
+def download_from_youtube(url: str, output_dir: Path = DOWNLOADS_DIR, cookies: str | None = None) -> Path:
+    """Download audio from a YouTube URL using yt-dlp and return the file path.
+    
+    Args:
+        url: YouTube URL to download from
+        output_dir: Directory to save the downloaded file
+        cookies: Optional cookies string (Netscape format) or path to cookies file
+    """
     if yt_dlp is None:
         raise RuntimeError("yt-dlp is required for YouTube downloads. Install with `pip install yt-dlp`.")
 
@@ -69,6 +77,24 @@ def download_from_youtube(url: str, output_dir: Path = DOWNLOADS_DIR) -> Path:
 
     # Add random delay to avoid rapid-fire requests
     time.sleep(random.uniform(1, 3))
+
+    # Handle cookies - check parameter, environment variable, or use default
+    cookies_source = cookies or os.getenv("YOUTUBE_COOKIES")
+    cookies_file = None
+    
+    if cookies_source:
+        # Create a temporary cookies file if cookies string is provided
+        if cookies_source.startswith("# Netscape HTTP Cookie File") or "\t" in cookies_source:
+            # Looks like cookie content, write to temp file
+            cookies_file = tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False)
+            cookies_file.write(cookies_source)
+            cookies_file.close()
+        elif Path(cookies_source).exists():
+            # Path to existing cookies file
+            cookies_file = cookies_source
+        else:
+            # Invalid cookies format
+            print(f"Warning: Invalid cookies format provided, proceeding without cookies")
 
     ydl_opts = {
         "format": "bestaudio/best",
@@ -106,8 +132,20 @@ def download_from_youtube(url: str, output_dir: Path = DOWNLOADS_DIR) -> Path:
         ],
     }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:  # type: ignore[attr-defined]
-        info = ydl.extract_info(url, download=True)
+    # Add cookies if available
+    if cookies_file:
+        ydl_opts["cookiefile"] = cookies_file if isinstance(cookies_file, str) else cookies_file.name
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:  # type: ignore[attr-defined]
+            info = ydl.extract_info(url, download=True)
+    finally:
+        # Clean up temporary cookies file if we created one
+        if cookies_file and hasattr(cookies_file, 'name') and Path(cookies_file.name).exists():
+            try:
+                Path(cookies_file.name).unlink()
+            except Exception:
+                pass  # Ignore cleanup errors
 
     # When using search (e.g., ytsearch1:), yt-dlp returns a 'playlist' dict with
     # an 'entries' list. Grab the first video entry in that case.
