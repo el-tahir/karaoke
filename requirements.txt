@@ -12,6 +12,9 @@ fastapi
 # Uvicorn & CPU-only PyTorch
 uvicorn[standard]
 
+# Pin NumPy < 2.0 for compatibility with compiled modules
+numpy<2.0
+
 # ONNXRuntime CPU build required by audio_separator
 onnxruntime==1.18.0
 
