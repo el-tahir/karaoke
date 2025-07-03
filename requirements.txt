@@ -9,4 +9,9 @@ ffmpeg-python
 jupyterlab
 yt-dlp
 fastapi
-uvicorn[standard] 
+# Uvicorn & CPU-only PyTorch
+uvicorn[standard]
+
+# Pin CPU-only PyTorch; extra index provides the cpu wheels
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.3.0+cpu 
