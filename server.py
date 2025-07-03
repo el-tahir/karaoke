@@ -23,6 +23,8 @@ allowed_origins = [
     "http://localhost:3000", 
     "http://127.0.0.1:3000",
     "https://karaoke-frontend-620262589404.us-east4.run.app",  # Your deployed frontend
+    # Allow other potential frontend URLs
+    "https://*.run.app",
 ]
 
 # In production, you might also want to allow all .run.app domains
@@ -33,7 +35,7 @@ if frontend_url:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=["*"],  # Temporarily allow all origins for debugging
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
