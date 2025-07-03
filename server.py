@@ -4,6 +4,7 @@ from pathlib import Path
 import argparse
 import logging
 import sys
+import os
 
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
@@ -17,10 +18,22 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 
 app = FastAPI(title="Karaoke Generator API")
 
-# Allow requests from a local frontend (e.g. Next.js on port 3000)
+# Configure CORS for both local development and production
+allowed_origins = [
+    "http://localhost:3000", 
+    "http://127.0.0.1:3000",
+    "https://karaoke-frontend-620262589404.us-east4.run.app",  # Your deployed frontend
+]
+
+# In production, you might also want to allow all .run.app domains
+# For now, we'll be explicit about the frontend domain
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url:
+    allowed_origins.append(frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
