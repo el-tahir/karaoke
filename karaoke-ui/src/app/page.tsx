@@ -26,10 +26,7 @@ export default function HomePage() {
     eventSource.onmessage = (event) => {
       const status: StatusMessage = JSON.parse(event.data);
 
-      setMessages((prev) => {
-        const root = status.event.split(":"[0]);
-        return [...prev, status];
-      });
+      setMessages((prev) => [...prev, status]);
 
       if (status.event === "done") {
         setResults({

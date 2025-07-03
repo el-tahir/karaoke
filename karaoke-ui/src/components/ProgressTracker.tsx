@@ -5,7 +5,7 @@ import { CheckCircle, Loader, XCircle } from "lucide-react";
 export interface StatusMessage {
   event: string;
   message: string;
-  data?: any;
+  data?: Record<string, string>;
 }
 
 interface ProgressTrackerProps {
