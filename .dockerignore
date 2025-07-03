@@ -1,0 +1,9 @@
+node_modules
+.vscode
+.env*
+*.venv
+.git
+**/*.mp4
+stems/
+downloads/
+frontend/.next/cache 

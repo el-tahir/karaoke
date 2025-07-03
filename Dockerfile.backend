@@ -1,0 +1,36 @@
+# syntax=docker/dockerfile:1
+# -------------------------------------------------------------
+# Backend – FastAPI + FFmpeg + ML/Audio deps
+# -------------------------------------------------------------
+FROM python:3.11-slim AS base
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    VIRTUAL_ENV=/opt/venv
+
+WORKDIR /app
+
+# ---- System dependencies ----
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ffmpeg curl gnupg ca-certificates && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# ---- Python dependencies ----
+COPY requirements.txt .
+RUN python -m venv $VIRTUAL_ENV && \
+    . $VIRTUAL_ENV/bin/activate && \
+    pip install --no-cache-dir -r requirements.txt
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# ---- Application source ----
+COPY karaoke /app/karaoke
+COPY server.py /app/
+
+# Create output directory for videos
+RUN mkdir /app/output_videos
+
+EXPOSE 8000
+
+# Cloud Run sets PORT env var; uvicorn honours --port option
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"] 

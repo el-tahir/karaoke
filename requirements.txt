@@ -1,0 +1,12 @@
+syncedlyrics
+pylrc
+pysubs2
+cutlet
+unidic-lite
+audio-separator
+moviepy
+ffmpeg-python
+jupyterlab
+yt-dlp
+fastapi
+uvicorn[standard] 
