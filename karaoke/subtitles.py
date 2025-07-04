@@ -106,7 +106,7 @@ def lrc_to_ass(lrc_path: Path, output_path: Path) -> Path:
     # Style definitions
     # -------------------------------------------------------------------
     font_name = getattr(config, "KARAOKE_FONT", "Arial")
-    base_font_size = getattr(config, "KARAOKE_FONT_SIZE", 42)
+    base_font_size = getattr(config, "KARAOKE_FONT_SIZE", 72)
 
     # Colours (ASS expects BGR). We let config override but provide defaults.
     primary_colour = getattr(config, "KARAOKE_PRIMARY", pysubs2.Color(255, 255, 255))
@@ -118,8 +118,8 @@ def lrc_to_ass(lrc_path: Path, output_path: Path) -> Path:
         primarycolor=primary_colour,         # *before* being sung
         secondarycolor=highlight_colour,     # fills as sung
         outlinecolor=pysubs2.Color(0, 0, 0),
-        alignment=pysubs2.Alignment.BOTTOM_CENTER,
-        marginv=40,
+        alignment=pysubs2.Alignment.MIDDLE_CENTER,
+        marginv=50,
         outline=3,
         shadow=1,
     )
@@ -129,8 +129,8 @@ def lrc_to_ass(lrc_path: Path, output_path: Path) -> Path:
         fontsize=base_font_size - 8,
         primarycolor=pysubs2.Color(160, 160, 160),  # dim grey
         outlinecolor=pysubs2.Color(0, 0, 0),
-        alignment=pysubs2.Alignment.BOTTOM_CENTER,
-        marginv=40,
+        alignment=pysubs2.Alignment.MIDDLE_CENTER,
+        marginv=50,
         outline=3,
         shadow=1,
     )
