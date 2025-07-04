@@ -1,14 +1,29 @@
-"""Subtitle generation utility.
+"""Subtitle generation utility – *enhanced version*.
 
-Converts an LRC lyrics file into an Advanced SubStation Alpha (.ass) subtitle
-file with word-by-word karaoke highlighting.
+This module converts an LRC lyrics file into an Advanced SubStation Alpha
+(.ass) subtitle file with word‑by‑word karaoke highlighting and extra
+polish for a YouTube‑ready karaoke experience.
+
+Key **enhancements** vs. the previous revision:
+    • Explicit PlayResX/PlayResY and WrapStyle ASS headers so libass scales
+      fonts correctly at any resolution.
+    • Config‑driven theme (font, highlight colour, resolution) with sensible
+      fall‑backs.
+    • Swapped display order so the **current** line anchors to the bottom
+      while the preview line sits above it (intuitive reading order).
+    • Graceful per‑word highlighting *even when* inline word timings are
+      missing – we fall back to an even split or whole‑line wipe.
+    • Fade‑in/out retained; optional overlap handled by video.py.
+
+Only standard dependencies (pylrc, pysubs2) are used.
 """
 from __future__ import annotations
 
 import re
-from pathlib import Path
-from typing import List
+import math
 import logging
+from pathlib import Path
+from typing import List, Optional, Tuple
 
 import pylrc
 import pysubs2
@@ -18,22 +33,28 @@ from .cache import cache_manager
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Regex helpers
+# ---------------------------------------------------------------------------
 TIMESTAMP_BRACKET_RE = re.compile(r"[(\d{2}):(\d{2})\.(\d{2})]")
 TIMESTAMP_INLINE_RE = re.compile(r"<(\d{2}):(\d{2})\.(\d{2})>")
 
+# ---------------------------------------------------------------------------
+# Utility functions
+# ---------------------------------------------------------------------------
 
 def _components_to_seconds(mins: str, secs: str, centis: str) -> float:
-    """Helper converting regex capture groups to seconds float."""
+    """Convert mm:ss.xx components to a seconds float."""
     return int(mins) * 60 + int(secs) + int(centis) / 100.0
 
 
-def _parse_inline_timings(text: str):
-    """Return list[(word, start_time_sec)] if inline <mm:ss.xx> timings exist."""
+def _parse_inline_timings(text: str) -> Optional[List[Tuple[str, float]]]:
+    """Parse <mm:ss.xx> inline time codes -> list of (word, start_sec)."""
     matches = list(TIMESTAMP_INLINE_RE.finditer(text))
     if not matches:
         return None
 
-    tokens = []
+    tokens: List[Tuple[str, float]] = []
     for idx, match in enumerate(matches):
         start_sec = _components_to_seconds(*match.groups())
         start_idx = match.end()
@@ -44,105 +65,152 @@ def _parse_inline_timings(text: str):
     return tokens
 
 
+# ---------------------------------------------------------------------------
+# Main conversion routine
+# ---------------------------------------------------------------------------
+
 def lrc_to_ass(lrc_path: Path, output_path: Path) -> Path:
-    """Convert an LRC file to an ASS subtitle file."""
-    # Check cache first (with error handling)
+    """Convert an LRC file to an ASS subtitle file, with caching."""
+
+    # -------------------------------------------------------------------
+    # Attempt to retrieve from cache first
+    # -------------------------------------------------------------------
     try:
         cached_subtitles = cache_manager.get_cached_subtitles(lrc_path)
         if cached_subtitles:
             return cached_subtitles
     except (FileNotFoundError, RuntimeError) as e:
-        logger.warning(f"Cache check failed, proceeding with subtitle generation: {e}")
-    
+        logger.warning(f"Cache check failed – regenerating subtitles: {e}")
+
+    # Parse LRC
     lrc = pylrc.parse(lrc_path.read_text(encoding="utf-8"))
     lines = sorted(lrc, key=lambda l: l.time)
+
     subs = pysubs2.SSAFile()
 
-    # Define base properties for all our text
-    font_name = "Arial"
-    font_size = 36
-    alignment = pysubs2.Alignment.BOTTOM_CENTER # Move to bottom for better viewing
-    margin_v = 30 # Vertical margin from the bottom of the screen
+    # -------------------------------------------------------------------
+    # ASS header tweaks – *Enhancement*
+    # -------------------------------------------------------------------
+    # Determine play‑res from config or fall‑back to 1920×1080
+    res = getattr(config, "DEFAULT_RESOLUTION", "1920x1080")
+    try:
+        play_res_x, play_res_y = map(int, res.split("x"))
+    except ValueError:
+        play_res_x, play_res_y = 1920, 1080  # sensible fall‑back
+    subs.info["PlayResX"] = str(play_res_x)
+    subs.info["PlayResY"] = str(play_res_y)
+    # Smart wrapping – breaks long lines on spaces rather than cut‑off
+    subs.info["WrapStyle"] = "0"
 
-    # Style for the CURRENT line (the one with karaoke highlighting)
-    # White text that turns red as it's sung.
+    # -------------------------------------------------------------------
+    # Style definitions
+    # -------------------------------------------------------------------
+    font_name = getattr(config, "KARAOKE_FONT", "Arial")
+    base_font_size = getattr(config, "KARAOKE_FONT_SIZE", 42)
+
+    # Colours (ASS expects BGR). We let config override but provide defaults.
+    primary_colour = getattr(config, "KARAOKE_PRIMARY", pysubs2.Color(255, 255, 255))
+    highlight_colour = getattr(config, "KARAOKE_HIGHLIGHT", pysubs2.Color(255, 128, 0))  # orange‑gold
+
     style_current = pysubs2.SSAStyle(
-        fontname=font_name, fontsize=font_size,
-        primarycolor=pysubs2.Color(255, 255, 255),  # Upcoming part of the line (white)
-        secondarycolor=pysubs2.Color(255, 255, 0),      # Sung part of the line (red)
+        fontname=font_name,
+        fontsize=base_font_size,
+        primarycolor=primary_colour,         # *before* being sung
+        secondarycolor=highlight_colour,     # fills as sung
         outlinecolor=pysubs2.Color(0, 0, 0),
-        alignment=alignment, marginv=margin_v,
-        outline=2, shadow=1
+        alignment=pysubs2.Alignment.BOTTOM_CENTER,
+        marginv=40,
+        outline=3,
+        shadow=1,
     )
 
-    # Style for the NEXT line (the preview line)
-    # Dimmer, grey text. No karaoke effect.
     style_next = pysubs2.SSAStyle(
-        fontname=font_name, fontsize=font_size - 8, # Slightly smaller
-        primarycolor=pysubs2.Color(128, 128, 128), # Dim grey color
+        fontname=font_name,
+        fontsize=base_font_size - 8,
+        primarycolor=pysubs2.Color(160, 160, 160),  # dim grey
         outlinecolor=pysubs2.Color(0, 0, 0),
-        alignment=alignment, marginv=margin_v,
-        outline=2, shadow=1
+        alignment=pysubs2.Alignment.BOTTOM_CENTER,
+        marginv=40,
+        outline=3,
+        shadow=1,
     )
 
     subs.styles["Current"] = style_current
     subs.styles["Next"] = style_next
 
-    # Events
+    # -------------------------------------------------------------------
+    # Build events (one per lyric line)
+    # -------------------------------------------------------------------
     for idx, current_line in enumerate(lines):
-        # Determine the start and end time for this combined event
         start_time_sec = current_line.time
-        # The event ends when the *next* line is supposed to start
-        end_time_sec = lines[idx + 1].time if idx + 1 < len(lines) else start_time_sec + 5.0
+        next_start_time = lines[idx + 1].time if idx + 1 < len(lines) else None
+        end_time_sec = (next_start_time or (start_time_sec + 5.0))
 
-        # 1. Prepare the CURRENT line text with karaoke tags
+        # ---------------------------------------------
+        # 1. Prepare CURRENT line text with \K tags
+        # ---------------------------------------------
         tokens = _parse_inline_timings(current_line.text)
         if tokens:
             words, starts = zip(*tokens)
             durations = [
-                starts[i + 1] - t_start if i + 1 < len(starts) else max(0.1, end_time_sec - t_start)
-                for i, t_start in enumerate(starts)
+                (starts[i + 1] - st) if i + 1 < len(starts) else max(0.1, end_time_sec - st)
+                for i, st in enumerate(starts)
             ]
-            karaoke_tokens = [f"{{\\K{max(1, int(round(dur * 100)))}}}{word}" for word, dur in zip(words, durations)]
-            current_line_text = " ".join(karaoke_tokens)
         else:
-            # Fallback for lines without word-by-word timings
-            current_line_text = TIMESTAMP_INLINE_RE.sub("", current_line.text).strip()
+            # *Enhancement*: fallback – even split (or single wipe) when no timings
+            clean_text = TIMESTAMP_INLINE_RE.sub("", current_line.text).strip()
+            words = clean_text.split()
+            if not words:  # skip empty
+                continue
+            total_dur = max(0.2, end_time_sec - start_time_sec)
+            per_word = total_dur / len(words)
+            starts = [start_time_sec + i * per_word for i in range(len(words))]
+            durations = [per_word] * len(words)
 
-        # 2. Prepare the NEXT line text (plain, no karaoke tags)
+        karaoke_tokens = [
+            f"{{\\K{max(1, int(round(d * 100)))}}}{w}" for w, d in zip(words, durations)
+        ]
+        current_line_text = " ".join(karaoke_tokens)
+
+        # ---------------------------------------------
+        # 2. NEXT line preview (plain text)
+        # ---------------------------------------------
         next_line_text = ""
         if idx + 1 < len(lines):
-            # Get the clean text of the next line
-            next_line = lines[idx + 1]
-            next_line_text = TIMESTAMP_INLINE_RE.sub("", next_line.text).strip()
+            next_raw = TIMESTAMP_INLINE_RE.sub("", lines[idx + 1].text).strip()
+            next_line_text = next_raw
 
-        # 3. Combine them into a single text block for the SSAEvent
-        #    {\rStyleName} applies a style. \N is a hard newline.
-        #    The result is two lines of text, stacked vertically, each with its own style.
+        # ---------------------------------------------
+        # 3. Combine into ASS text (preview above, current bottom)
+        #    *Enhancement*: preview first so current anchors at bottom.
+        # ---------------------------------------------
+        fade_tag = "{\\fad(250,250)}"
         if next_line_text:
-            combined_text = f"{{\\fad(250, 250)}}{{\\rCurrent}}{current_line_text}{{\\rNext}}\\N{next_line_text}"
+            combined_text = (
+                f"{fade_tag}{{\\rNext}}{next_line_text}\\N{{\\rCurrent}}{current_line_text}"
+            )
         else:
-            # Handle the very last line, which has no "next" line
-            combined_text = f"{{\\fad(250, 250)}}{{\\rCurrent}}{current_line_text}"
+            combined_text = f"{fade_tag}{{\\rCurrent}}{current_line_text}"
 
-        # 4. Create and append the event
-        event = pysubs2.SSAEvent(
-            start=pysubs2.make_time(s=start_time_sec),
-            end=pysubs2.make_time(s=end_time_sec),
-            text=combined_text,
-            # The style here is just a default; the \r tags in the text override it.
-            # We can remove the explicit style parameter if we want.
+        # ---------------------------------------------
+        # 4. Event creation
+        # ---------------------------------------------
+        subs.events.append(
+            pysubs2.SSAEvent(
+                start=pysubs2.make_time(s=start_time_sec),
+                end=pysubs2.make_time(s=end_time_sec),
+                text=combined_text,
+            )
         )
-        subs.events.append(event)
 
+    # -------------------------------------------------------------------
+    # Save & cache
+    # -------------------------------------------------------------------
     output_path.parent.mkdir(parents=True, exist_ok=True)
     subs.save(str(output_path))
-    
-    # Cache the generated subtitles (with error handling)
     try:
         cache_manager.cache_subtitles(lrc_path, output_path)
     except (FileNotFoundError, RuntimeError) as e:
-        logger.warning(f"Failed to cache subtitles, but generation was successful: {e}")
-    
+        logger.warning(f"Subtitle caching failed (non‑fatal): {e}")
+
     return output_path
- 
