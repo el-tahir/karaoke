@@ -227,7 +227,9 @@ class CacheManager:
         logger.info(f"Cached subtitles for: {lrc_path.name}")
 
     def get_cached_video(self, audio_path: Path, subtitles_path: Path, 
-                        resolution: str, background: str) -> Optional[Path]:
+                        resolution: str, background_color: str,
+                        background_path: Optional[str] = None, 
+                        crf: int = 18) -> Optional[Path]:
         """Check if video is cached for given parameters."""
         if not config.ENABLE_VIDEO_CACHE:
             return None
@@ -236,7 +238,9 @@ class CacheManager:
             "audio_hash": self._get_file_hash(audio_path),
             "subtitles_hash": self._get_file_hash(subtitles_path),
             "resolution": resolution,
-            "background": background
+            "background_color": background_color,
+            "background_path": background_path,
+            "crf": crf
         }
         cache_key = self._get_content_hash(cache_params)
         cache_file = self.videos_cache_dir / f"{cache_key}.json"
@@ -257,7 +261,8 @@ class CacheManager:
         return None
 
     def cache_video(self, audio_path: Path, subtitles_path: Path, resolution: str, 
-                   background: str, video_path: Path) -> None:
+                   background_color: str, background_path: Optional[str], 
+                   crf: int, video_path: Path) -> None:
         """Cache video for given parameters."""
         if not config.ENABLE_VIDEO_CACHE:
             return
@@ -266,7 +271,9 @@ class CacheManager:
             "audio_hash": self._get_file_hash(audio_path),
             "subtitles_hash": self._get_file_hash(subtitles_path),
             "resolution": resolution,
-            "background": background
+            "background_color": background_color,
+            "background_path": background_path,
+            "crf": crf
         }
         cache_key = self._get_content_hash(cache_params)
         cache_file = self.videos_cache_dir / f"{cache_key}.json"
@@ -275,7 +282,9 @@ class CacheManager:
             "audio_path": str(audio_path.resolve()),
             "subtitles_path": str(subtitles_path.resolve()),
             "resolution": resolution,
-            "background": background,
+            "background_color": background_color,
+            "background_path": background_path,
+            "crf": crf,
             "video_path": str(video_path.resolve()),
             "cache_params": cache_params
         }

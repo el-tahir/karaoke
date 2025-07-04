@@ -102,7 +102,12 @@ def build_video(
     # -------------------------------------------------------------------
     try:
         cached = cache_manager.get_cached_video(
-            audio_path, ass_path, resolution, background_color, str(background_path), crf
+            audio_path,
+            ass_path,
+            resolution,
+            background_color,
+            str(background_path) if background_path else None,
+            crf,
         )
         if cached:
             logger.info(f"✅ Using cached video: {cached}")
@@ -181,7 +186,13 @@ def build_video(
     # Cache result
     try:
         cache_manager.cache_video(
-            audio_path, ass_path, resolution, background_color, str(background_path), crf, output_path
+            audio_path,
+            ass_path,
+            resolution,
+            background_color,
+            str(background_path) if background_path else None,
+            crf,
+            output_path,
         )
     except (FileNotFoundError, RuntimeError) as e:
         logger.warning(f"Video caching failed (non‑fatal): {e}")

@@ -94,9 +94,9 @@ class KaraokePipeline:
 
         # Karaoke (instrumental) video
         k_video.build_video(
-            instrumental_path,
-            ass_path,
-            output_path,
+            audio_path=instrumental_path,
+            ass_path=ass_path,
+            output_path=output_path,
             resolution=self.resolution,
             background_color=self.background,
             # background_path=self.background_path,  # if using image/video bg
@@ -104,9 +104,9 @@ class KaraokePipeline:
         )
         # Full‑song video (original audio)
         k_video.build_video(
-            self.audio_path,
-            ass_path,
-            full_output_path,
+            audio_path=self.audio_path,
+            ass_path=ass_path,
+            output_path=full_output_path,
             resolution=self.resolution,
             background_color=self.background,
         )
@@ -160,17 +160,17 @@ class KaraokePipeline:
 
             # Karaoke version
             k_video.build_video(
-                instrumental_path,
-                ass_path,
-                output_path,
+                audio_path=instrumental_path,
+                ass_path=ass_path,
+                output_path=output_path,
                 resolution=self.resolution,
                 background_color=self.background,
             )
             # Full version
             k_video.build_video(
-                self.audio_path,
-                ass_path,
-                full_output_path,
+                audio_path=self.audio_path,
+                ass_path=ass_path,
+                output_path=full_output_path,
                 resolution=self.resolution,
                 background_color=self.background,
             )
