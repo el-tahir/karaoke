@@ -15,7 +15,9 @@ PlayResY: 1080
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Karaoke,Arial,80,&H00FFFFFF,&H00FF00FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1
+Style: KaraokeCurrent,Arial,80,&H00FFFFFF,&H00FF00FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1
+Style: KaraokeNext,Arial,60,&H88FFFFFF,&H00FF00FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,1,2,10,10,10,1
+Style: KaraokeNext2,Arial,50,&H66FFFFFF,&H00FF00FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,1,2,10,10,10,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -79,12 +81,16 @@ def create_karaoke_text(word_segments: List[Tuple[str, str]], line_end_seconds: 
         karaoke_parts.append(f'{{\k{duration_cs}}}{word} ')
     return ''.join(karaoke_parts).strip()
 
+def create_plain_text(word_segments: List[Tuple[str, str]]) -> str:
+    return ' '.join(word for _, word in word_segments)
+
 def convert_lrc_to_ass(lrc_path: str, output_dir: str = '.') -> str:
     """
-    Converts an LRC file to an ASS subtitle file.
+    Converts an LRC file to an ASS subtitle file with scrolling preview.
 
-    Infers syncing level from filename. Applies karaoke for word-level, plain for line-level.
-    Displays one big centered line per screen.
+    Displays current line highlighted in center with karaoke if word-level.
+    Shows up to two upcoming lines below in dimmer styles.
+    Updates at each line change.
 
     Args:
         lrc_path (str): Path to the input LRC file.
@@ -116,23 +122,36 @@ def convert_lrc_to_ass(lrc_path: str, output_dir: str = '.') -> str:
     with open(ass_path, 'w', encoding='utf-8') as f:
         f.write(get_ass_header())
 
-        for i, (line_time, word_segments) in enumerate(lrc_lines):
-            line_start = lrc_to_ass_time(line_time)
-            if i + 1 < len(lrc_lines):
+        num_lines = len(lrc_lines)
+        for i in range(num_lines):
+            # Current line timing
+            line_start = lrc_to_ass_time(lrc_lines[i][0])
+            if i + 1 < num_lines:
                 line_end = lrc_to_ass_time(lrc_lines[i+1][0])
                 line_end_seconds = time_to_seconds(lrc_lines[i+1][0])
             else:
                 line_end = '99:59.99'
                 line_end_seconds = time_to_seconds('99:59.99')
 
+            # Current line
+            word_segments = lrc_lines[i][1]
             if is_word_level and len(word_segments) > 1:
                 ass_text = create_karaoke_text(word_segments, line_end_seconds)
             else:
-                ass_text = word_segments[0][1] if word_segments else ''
+                ass_text = create_plain_text(word_segments)
+            f.write(f'Dialogue: 0,{line_start},{line_end},KaraokeCurrent,,0,0,0,,{{\pos(960,540)}}{ass_text}\n')
 
-            # Center in middle: Use \pos(960,540) for 1920x1080
-            # Write dialogue
-            f.write(f'Dialogue: 0,{line_start},{line_end},Karaoke,,0,0,0,,{{\pos(960,540)}}{ass_text}\n')
+            # Next line if exists
+            if i + 1 < num_lines:
+                next_segments = lrc_lines[i+1][1]
+                next_text = create_plain_text(next_segments)
+                f.write(f'Dialogue: 0,{line_start},{line_end},KaraokeNext,,0,0,0,,{{\pos(960,640)}}{next_text}\n')
+
+            # Next next line if exists
+            if i + 2 < num_lines:
+                next2_segments = lrc_lines[i+2][1]
+                next2_text = create_plain_text(next2_segments)
+                f.write(f'Dialogue: 0,{line_start},{line_end},KaraokeNext2,,0,0,0,,{{\pos(960,740)}}{next2_text}\n')
 
     print(f"Converted {lrc_path} to {ass_path}")
     return ass_path 
