@@ -1,6 +1,8 @@
 import os
 import subprocess
 import json
+import logging
+logger = logging.getLogger(__name__)
 
 def get_audio_duration(audio_file: str) -> float:
     """
@@ -52,8 +54,8 @@ def create_karaoke_video(audio_file: str, ass_file: str, output_file: str = None
 
     try:
         subprocess.run(cmd, check=True)
-        print(f"Created karaoke video: {output_file}")
+        logger.info(f"Created karaoke video: {output_file}")
         return output_file
     except subprocess.CalledProcessError as e:
-        print(f"Error creating video: {e}")
+        logger.error(f"Error creating video: {e}")
         raise 

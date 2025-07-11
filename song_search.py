@@ -4,7 +4,6 @@ import logging
 
 # Set up logging
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def search_song(search_term: str) -> dict:
     """

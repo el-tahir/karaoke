@@ -1,3 +1,4 @@
 yt-dlp
+audio-separator[gpu]
 
 # Note: ffmpeg is also required for audio extraction, install it separately via your package manager. 

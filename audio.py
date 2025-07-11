@@ -1,4 +1,6 @@
 import yt_dlp
+import logging
+logger = logging.getLogger(__name__)
 
 def download_mp3(url: str, output_dir: str = '.') -> None:
     """
@@ -43,7 +45,7 @@ def download_mp3(url: str, output_dir: str = '.') -> None:
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
             ydl.download([url])
-            print(f"Successfully downloaded MP3 for: {url}")
+            logger.info(f"Successfully downloaded MP3 for: {url}")
         except Exception as e:
-            print(f"Error downloading {url}: {str(e)}")
+            logger.error(f"Error downloading {url}: {str(e)}")
             raise 
