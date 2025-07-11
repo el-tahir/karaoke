@@ -76,7 +76,7 @@ def get_song_info_from_url(youtube_url: str) -> dict:
 # ------------------------------------------------------------
 # Internal: Shared karaoke creation logic (steps 2 ➜ 5)
 # ------------------------------------------------------------
-def _create_karaoke_from_info(song_info: dict, output_dir: str = 'downloads') -> str:
+def _create_karaoke_from_info(song_info: dict, output_dir: str = 'downloads', line_level_only: bool = False) -> str:
     """Shared implementation that takes a *parsed* ``song_info`` dict and runs
     the remaining karaoke pipeline steps (download → separation → lyrics →
     ASS → video).
@@ -129,7 +129,7 @@ def _create_karaoke_from_info(song_info: dict, output_dir: str = 'downloads') ->
     # --------------------------------------------------------
     # Step 3: Fetch Synced Lyrics
     # --------------------------------------------------------
-    lrc_file = get_lyrics(artist, track, output_dir)
+    lrc_file = get_lyrics(artist, track, output_dir, line_level_only=line_level_only)
     if not lrc_file:
         logging.error("Failed to fetch lyrics")
         return None
@@ -180,7 +180,7 @@ def _create_karaoke_from_info(song_info: dict, output_dir: str = 'downloads') ->
 # ------------------------------------------------------------
 # Public: Create karaoke directly from a YouTube URL
 # ------------------------------------------------------------
-def create_karaoke_from_url(youtube_url: str, output_dir: str = 'downloads') -> str:
+def create_karaoke_from_url(youtube_url: str, output_dir: str = 'downloads', line_level_only: bool = False) -> str:
     """Alternate entry-point that accepts a direct YouTube link instead of a
     textual search query.
     """
@@ -190,12 +190,12 @@ def create_karaoke_from_url(youtube_url: str, output_dir: str = 'downloads') -> 
         logging.error(str(e))
         return None
 
-    return _create_karaoke_from_info(song_info, output_dir)
+    return _create_karaoke_from_info(song_info, output_dir, line_level_only=line_level_only)
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def create_karaoke_from_search(search_term: str, output_dir: str = 'downloads') -> str:
+def create_karaoke_from_search(search_term: str, output_dir: str = 'downloads', line_level_only: bool = False) -> str:
     """High-level helper that *searches* YouTube Music and then delegates to the
     shared pipeline implementation.
     """
@@ -205,21 +205,21 @@ def create_karaoke_from_search(search_term: str, output_dir: str = 'downloads') 
         logging.error(f"Error finding song info for '{search_term}': {str(e)}")
         return None
 
-    return _create_karaoke_from_info(song_info, output_dir)
+    return _create_karaoke_from_info(song_info, output_dir, line_level_only=line_level_only)
 
 
 if __name__ == '__main__':
-    import sys
+    import argparse
 
-    if len(sys.argv) < 2:
-        logging.error("Usage: python pipeline.py <search term|YouTube URL> [output_dir]")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Generate karaoke videos (instrumental & original) from a YouTube link or song search term.")
+    parser.add_argument('input', help='Search term or YouTube URL')
+    parser.add_argument('output_dir', nargs='?', default='downloads', help='Directory to store output files (default: downloads)')
+    parser.add_argument('-l', '--line-level', action='store_true', help='Force line-level lyric syncing (disable word-level karaoke)')
 
-    user_input = sys.argv[1]
-    custom_output_dir = sys.argv[2] if len(sys.argv) >= 3 else 'downloads'
+    args = parser.parse_args()
 
-    # Basic heuristic: does the input look like a YT link?
-    if re.match(r'^https?://(?:www\.)?(?:youtube\.com|youtu\.be)/', user_input, re.IGNORECASE):
-        create_karaoke_from_url(user_input, custom_output_dir)
+    # Detect if the provided input is a YouTube URL
+    if re.match(r'^https?://(?:www\.)?(?:youtube\.com|youtu\.be)/', args.input, re.IGNORECASE):
+        create_karaoke_from_url(args.input, args.output_dir, line_level_only=args.line_level)
     else:
-        create_karaoke_from_search(user_input, custom_output_dir) 
+        create_karaoke_from_search(args.input, args.output_dir, line_level_only=args.line_level) 
