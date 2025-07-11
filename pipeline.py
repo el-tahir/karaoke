@@ -29,9 +29,10 @@ def create_karaoke_from_search(search_term: str, output_dir: str = 'downloads') 
     os.makedirs(output_dir, exist_ok=True)
 
     # Step 1: Search for song info
-    song_info = search_song(search_term)
-    if not song_info:
-        print(f"No song info found for '{search_term}'")
+    try:
+        song_info = search_song(search_term)
+    except ValueError as e:
+        print(f"Error finding song info for '{search_term}': {str(e)}")
         return None
     artist = song_info['artist']
     track = song_info['track']

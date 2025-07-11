@@ -64,7 +64,7 @@ def time_to_seconds(time_str: str) -> float:
         return 0.0
     minutes, rest = time_str.split(':')
     seconds, cents = rest.split('.')
-    return int(minutes) * 60 + int(seconds) + int(cents) / 100
+    return int(minutes) * 60 + int(seconds) + int(cents.ljust(2, '0')) / 100
 
 # Function to create karaoke effect for word-level
 def create_karaoke_text(word_segments: List[Tuple[str, str]], line_end_seconds: float) -> str:
@@ -84,13 +84,20 @@ def create_karaoke_text(word_segments: List[Tuple[str, str]], line_end_seconds: 
 def create_plain_text(word_segments: List[Tuple[str, str]]) -> str:
     return ' '.join(word for _, word in word_segments)
 
+def seconds_to_ass_time(seconds: float) -> str:
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    cents = int((seconds % 1) * 100)
+    return f"{hours}:{minutes:02d}:{secs:02d}.{cents:02d}"
+
 def convert_lrc_to_ass(lrc_path: str, output_dir: str = '.') -> str:
     """
-    Converts an LRC file to an ASS subtitle file with scrolling preview.
+    Converts an LRC file to an ASS subtitle file with scrolling preview and smooth transitions.
 
     Displays current line highlighted in center with karaoke if word-level.
     Shows up to two upcoming lines below in dimmer styles.
-    Updates at each line change.
+    Adds sliding animations at line transitions.
 
     Args:
         lrc_path (str): Path to the input LRC file.
@@ -123,35 +130,52 @@ def convert_lrc_to_ass(lrc_path: str, output_dir: str = '.') -> str:
         f.write(get_ass_header())
 
         num_lines = len(lrc_lines)
+        trans_dur_sec = 0.3
+
         for i in range(num_lines):
-            # Current line timing
-            line_start = lrc_to_ass_time(lrc_lines[i][0])
+            current_sec = time_to_seconds(lrc_lines[i][0])
+
             if i + 1 < num_lines:
-                line_end = lrc_to_ass_time(lrc_lines[i+1][0])
-                line_end_seconds = time_to_seconds(lrc_lines[i+1][0])
+                next_sec = time_to_seconds(lrc_lines[i+1][0])
             else:
-                line_end = '99:59.99'
-                line_end_seconds = time_to_seconds('99:59.99')
+                next_sec = current_sec + 5.0  # Arbitrary end time for last line
+
+            dur_sec = next_sec - current_sec
+            if dur_sec <= 0:
+                continue
+
+            line_start = seconds_to_ass_time(current_sec)
+            line_end = seconds_to_ass_time(next_sec)
+
+            dur_ms = int(dur_sec * 1000)
+            trans_ms = int(trans_dur_sec * 1000)
+            if dur_ms < trans_ms:
+                trans_ms = dur_ms // 2
+
+            move_start_ms = dur_ms - trans_ms if dur_ms > trans_ms else 0
 
             # Current line
             word_segments = lrc_lines[i][1]
             if is_word_level and len(word_segments) > 1:
-                ass_text = create_karaoke_text(word_segments, line_end_seconds)
+                ass_text = create_karaoke_text(word_segments, dur_sec)
             else:
                 ass_text = create_plain_text(word_segments)
-            f.write(f'Dialogue: 0,{line_start},{line_end},KaraokeCurrent,,0,0,0,,{{\pos(960,540)}}{ass_text}\n')
+            current_tag = f"{{\move(960,540,960,440,{move_start_ms},{dur_ms})\fad(0,{trans_ms})}}"
+            f.write(f'Dialogue: 0,{line_start},{line_end},KaraokeCurrent,,0,0,0,,{current_tag}{ass_text}\n')
 
             # Next line if exists
             if i + 1 < num_lines:
                 next_segments = lrc_lines[i+1][1]
                 next_text = create_plain_text(next_segments)
-                f.write(f'Dialogue: 0,{line_start},{line_end},KaraokeNext,,0,0,0,,{{\pos(960,640)}}{next_text}\n')
+                next_tag = f"{{\move(960,640,960,540,{move_start_ms},{dur_ms})}}"
+                f.write(f'Dialogue: 0,{line_start},{line_end},KaraokeNext,,0,0,0,,{next_tag}{next_text}\n')
 
-            # Next next line if exists
+            # Next2 line if exists
             if i + 2 < num_lines:
                 next2_segments = lrc_lines[i+2][1]
                 next2_text = create_plain_text(next2_segments)
-                f.write(f'Dialogue: 0,{line_start},{line_end},KaraokeNext2,,0,0,0,,{{\pos(960,740)}}{next2_text}\n')
+                next2_tag = f"{{\move(960,740,960,640,{move_start_ms},{dur_ms})\fad({trans_ms},0)}}"
+                f.write(f'Dialogue: 0,{line_start},{line_end},KaraokeNext2,,0,0,0,,{next2_tag}{next2_text}\n')
 
     print(f"Converted {lrc_path} to {ass_path}")
     return ass_path 
