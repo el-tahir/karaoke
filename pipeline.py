@@ -42,14 +42,29 @@ def create_karaoke_from_search(search_term: str, output_dir: str = 'downloads') 
 
     # Step 2: Download MP3
     try:
+        # Capture existing MP3 files before download so we can reliably identify the newly downloaded one
+        pre_download_mp3s = set(f for f in os.listdir(output_dir) if f.lower().endswith('.mp3'))
+
         download_mp3(youtube_url, output_dir)
-        audio_file = os.path.join(output_dir, f"{track}.mp3")  # Assuming title matches track
+
+        # First, try the straightforward approach: track name as filename
+        audio_file = os.path.join(output_dir, f"{track}.mp3")
+
         if not os.path.exists(audio_file):
-            # Fallback: find the downloaded file
-            for f in os.listdir(output_dir):
-                if f.endswith('.mp3'):
-                    audio_file = os.path.join(output_dir, f)
-                    break
+            # Identify MP3 files after download
+            post_download_mp3s = [f for f in os.listdir(output_dir) if f.lower().endswith('.mp3')]
+            # Determine what files are new
+            new_files = [f for f in post_download_mp3s if f not in pre_download_mp3s]
+
+            if new_files:
+                # There should typically be exactly one new file — pick the first
+                audio_file = os.path.join(output_dir, new_files[0])
+            else:
+                # Fallback: choose the most recently modified MP3 file
+                mp3_paths = [os.path.join(output_dir, f) for f in post_download_mp3s]
+                if not mp3_paths:
+                    raise FileNotFoundError("No MP3 file found after download.")
+                audio_file = max(mp3_paths, key=os.path.getmtime)
     except Exception as e:
         print(f"Failed to download audio: {e}")
         return None
