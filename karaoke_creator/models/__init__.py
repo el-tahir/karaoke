@@ -1,0 +1,1 @@
+"""Data models for karaoke creator."""

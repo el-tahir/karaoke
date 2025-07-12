@@ -1,0 +1,1 @@
+"""Core modules for karaoke creation pipeline."""

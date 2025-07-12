@@ -1,0 +1,1 @@
+"""Lyrics processing functionality."""
