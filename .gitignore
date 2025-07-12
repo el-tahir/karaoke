@@ -6,4 +6,5 @@ __pycache__/
 venv/
 
 # Generated media & artifacts
-downloads/ 
+downloads/
+final_videos/ 
