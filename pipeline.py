@@ -9,6 +9,12 @@ from separate import separate_audio
 import re  # For sanitizing filenames
 import yt_dlp  # For extracting metadata when a direct YouTube URL is supplied
 
+# Try to import cutlet for optional Japanese→romaji conversion
+try:
+    import cutlet  # type: ignore
+except ImportError:
+    cutlet = None  # Will be checked at runtime
+
 # ------------------------------------------------------------
 # Helper: Extract song metadata directly from a YouTube URL
 # ------------------------------------------------------------
@@ -74,6 +80,82 @@ def get_song_info_from_url(youtube_url: str) -> dict:
 
 
 # ------------------------------------------------------------
+# Helper: Romanize Japanese lyrics in an LRC file (in-place)
+# ------------------------------------------------------------
+
+def _romanize_lrc_inplace(lrc_path: str) -> bool:
+    """Detects Japanese characters in *lrc_path* and rewrites the file with
+    romaji lyrics using *cutlet*.
+
+    Timestamp tags (both line-level ``[mm:ss.xx]`` and word-level
+    ``<mm:ss.xx>``) are preserved verbatim – only the lyric text segments are
+    transformed. Returns **True** if the file was modified, **False** if no
+    Japanese text was found or *cutlet* is unavailable.
+    """
+    import re
+
+    # Fast exit if cutlet isn't installed
+    if cutlet is None:
+        logging.warning("cutlet not available – skipping romanization step")
+        return False
+
+    # Load file
+    try:
+        with open(lrc_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+    except Exception as e:
+        logging.error(f"Could not read LRC for romanization: {e}")
+        return False
+
+    jp_char_re = re.compile(r'[\u3040-\u30ff\u4e00-\u9FFF]')  # Hiragana|Katakana|Kanji
+    if not any(jp_char_re.search(line) for line in lines):
+        # No Japanese text detected – nothing to do
+        return False
+
+    katsu = cutlet.Cutlet()
+    tag_re = re.compile(r'(<\d+:\d+\.\d+>)')
+    new_lines = []
+
+    for raw in lines:
+        line = raw.rstrip('\n')
+
+        # Skip possible metadata/id tags like [ti:], [ar:], etc.
+        if re.match(r'^\[[a-zA-Z]{2,}:.*\]$', line):
+            new_lines.append(raw)
+            continue
+
+        # Split off the first closing bracket to get line-level timestamps
+        if ']' in line:
+            prefix, rest = line.split(']', 1)
+            prefix += ']'
+        else:
+            prefix, rest = '', line
+
+        parts = tag_re.split(rest)
+        transformed_segments = []
+        for part in parts:
+            if tag_re.match(part):
+                # Word-level timestamp – keep as is
+                transformed_segments.append(part)
+            else:
+                transformed_segments.append(
+                    katsu.romaji(part) if jp_char_re.search(part) else part
+                )
+
+        new_lines.append(prefix + ''.join(transformed_segments) + '\n')
+
+    # Write back
+    try:
+        with open(lrc_path, 'w', encoding='utf-8') as f:
+            f.writelines(new_lines)
+        logging.info(f"Romanized Japanese lyrics in {lrc_path}")
+        return True
+    except Exception as e:
+        logging.error(f"Failed to write romanized LRC: {e}")
+        return False
+
+
+# ------------------------------------------------------------
 # Internal: Shared karaoke creation logic (steps 2 ➜ 5)
 # ------------------------------------------------------------
 def _create_karaoke_from_info(song_info: dict, output_dir: str = 'downloads', line_level_only: bool = True) -> str:
@@ -133,6 +215,14 @@ def _create_karaoke_from_info(song_info: dict, output_dir: str = 'downloads', li
     if not lrc_file:
         logging.error("Failed to fetch lyrics")
         return None
+
+    # --------------------------------------------------------
+    # NEW: Romanize Japanese lyrics (if applicable)
+    # --------------------------------------------------------
+    try:
+        _romanize_lrc_inplace(lrc_file)
+    except Exception as e:
+        logging.warning(f"Romanization step failed: {e}")
 
     # --------------------------------------------------------
     # Step 4: Convert LRC ➜ ASS
