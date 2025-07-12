@@ -31,7 +31,7 @@ def download_mp3(url: str, output_dir: str = '.') -> None:
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
             # Set quality to 192 kbps (adjustable)
-            'preferredquality': '192',
+            'preferredquality': '320',
         }],
         # Output template: save in specified directory with title as filename
         'outtmpl': f'{output_dir}/%(title)s.%(ext)s',

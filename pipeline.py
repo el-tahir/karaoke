@@ -76,7 +76,7 @@ def get_song_info_from_url(youtube_url: str) -> dict:
 # ------------------------------------------------------------
 # Internal: Shared karaoke creation logic (steps 2 ➜ 5)
 # ------------------------------------------------------------
-def _create_karaoke_from_info(song_info: dict, output_dir: str = 'downloads', line_level_only: bool = False) -> str:
+def _create_karaoke_from_info(song_info: dict, output_dir: str = 'downloads', line_level_only: bool = True) -> str:
     """Shared implementation that takes a *parsed* ``song_info`` dict and runs
     the remaining karaoke pipeline steps (download → separation → lyrics →
     ASS → video).
@@ -145,11 +145,15 @@ def _create_karaoke_from_info(song_info: dict, output_dir: str = 'downloads', li
     # --------------------------------------------------------
     # Step 5: Create Video
     # --------------------------------------------------------
+    # Ensure a dedicated directory exists for all final karaoke videos
+    final_videos_dir = 'final_videos'
+    os.makedirs(final_videos_dir, exist_ok=True)
+
     video_filename = f"{safe_artist}_{safe_track}_karaoke.mp4"
     video_path = create_karaoke_video(
         instrumental,
         ass_file,
-        output_file=os.path.join(output_dir, video_filename),
+        output_file=os.path.join(final_videos_dir, video_filename),
     )
 
     if not video_path:
@@ -164,7 +168,7 @@ def _create_karaoke_from_info(song_info: dict, output_dir: str = 'downloads', li
         original_video_path = create_karaoke_video(
             audio_file,
             ass_file,
-            output_file=os.path.join(output_dir, original_video_filename),
+            output_file=os.path.join(final_videos_dir, original_video_filename),
         )
         if original_video_path:
             logging.info(f"Original song video created successfully: {original_video_path}")
@@ -180,7 +184,7 @@ def _create_karaoke_from_info(song_info: dict, output_dir: str = 'downloads', li
 # ------------------------------------------------------------
 # Public: Create karaoke directly from a YouTube URL
 # ------------------------------------------------------------
-def create_karaoke_from_url(youtube_url: str, output_dir: str = 'downloads', line_level_only: bool = False) -> str:
+def create_karaoke_from_url(youtube_url: str, output_dir: str = 'downloads', line_level_only: bool = True) -> str:
     """Alternate entry-point that accepts a direct YouTube link instead of a
     textual search query.
     """
@@ -195,7 +199,7 @@ def create_karaoke_from_url(youtube_url: str, output_dir: str = 'downloads', lin
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def create_karaoke_from_search(search_term: str, output_dir: str = 'downloads', line_level_only: bool = False) -> str:
+def create_karaoke_from_search(search_term: str, output_dir: str = 'downloads', line_level_only: bool = True) -> str:
     """High-level helper that *searches* YouTube Music and then delegates to the
     shared pipeline implementation.
     """
@@ -214,12 +218,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Generate karaoke videos (instrumental & original) from a YouTube link or song search term.")
     parser.add_argument('input', help='Search term or YouTube URL')
     parser.add_argument('output_dir', nargs='?', default='downloads', help='Directory to store output files (default: downloads)')
-    parser.add_argument('-l', '--line-level', action='store_true', help='Force line-level lyric syncing (disable word-level karaoke)')
+    parser.add_argument('-w', '--word-level', action='store_true', help='Enable word-level lyric syncing (default: line-level)')
 
     args = parser.parse_args()
 
-    # Detect if the provided input is a YouTube URL
-    if re.match(r'^https?://(?:www\.)?(?:youtube\.com|youtu\.be)/', args.input, re.IGNORECASE):
-        create_karaoke_from_url(args.input, args.output_dir, line_level_only=args.line_level)
+    # Accept any sub-domain of youtube.com (e.g. www., music., m.) in addition to youtu.be short links
+    if re.match(r'^https?://(?:[\w.-]+\.)?(?:youtube\.com|youtu\.be)/', args.input, re.IGNORECASE):
+        create_karaoke_from_url(args.input, args.output_dir, line_level_only=not args.word_level)
     else:
-        create_karaoke_from_search(args.input, args.output_dir, line_level_only=args.line_level) 
+        create_karaoke_from_search(args.input, args.output_dir, line_level_only=not args.word_level) 
