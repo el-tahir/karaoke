@@ -89,6 +89,7 @@ class Config:
     # Processing options
     cleanup_temp_files: bool = True
     create_both_versions: bool = True  # Create both karaoke and original versions
+    skip_separation: bool = False  # Skip audio separation (for instrumental-only mode)
     
     @classmethod
     def load_from_file(cls, config_path: str) -> "Config":
@@ -127,6 +128,7 @@ class Config:
             log_format=data.get('log_format', '%(asctime)s - %(name)s - %(levelname)s - %(message)s'),
             cleanup_temp_files=data.get('cleanup_temp_files', True),
             create_both_versions=data.get('create_both_versions', True),
+            skip_separation=data.get('skip_separation', False),
         )
     
     def to_dict(self) -> Dict[str, Any]:
@@ -168,6 +170,7 @@ class Config:
             'log_format': self.log_format,
             'cleanup_temp_files': self.cleanup_temp_files,
             'create_both_versions': self.create_both_versions,
+            'skip_separation': self.skip_separation,
         }
     
     def save_to_file(self, config_path: str) -> None:

@@ -21,9 +21,9 @@ def _get_ass_header() -> str:
         "[V4+ Styles]\n"
         "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, "
         "ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
-        "Style: KaraokeCurrent,Arial,80,&H00FFFFFF,&H00FF00FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1\n"
-        "Style: KaraokeNext,Arial,60,&H88FFFFFF,&H00FF00FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,1,2,10,10,10,1\n"
-        "Style: KaraokeNext2,Arial,50,&H66FFFFFF,&H00FF00FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,1,2,10,10,10,1\n\n"
+        "Style: KaraokeCurrent,Montserrat,80,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,3,3,2,10,10,10,1\n"
+        "Style: KaraokeNext,Montserrat,60,&H88FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1\n"
+        "Style: KaraokeNext2,Montserrat,50,&H66FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,1,2,10,10,10,1\n\n"
         "[Events]\n"
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
     )
@@ -144,7 +144,7 @@ def convert_lrc_to_ass(lrc_path: str, output_dir: str = ".") -> str:
                 ass_text = _plain_text(word_segments)
 
             # Current line
-            current_tag = f"{{\\move(960,540,960,440,{move_start_ms},{dur_ms})\\fad(0,{trans_ms})}}"
+            current_tag = f"{{\\move(960,520,960,400,{move_start_ms},{dur_ms})\\fad(0,{trans_ms})}}"
             fp.write(
                 f"Dialogue: 0,{start_ts},{end_ts},KaraokeCurrent,,0,0,0,,{current_tag}{ass_text}\n"
             )
@@ -152,7 +152,7 @@ def convert_lrc_to_ass(lrc_path: str, output_dir: str = ".") -> str:
             # Next line (if exists)
             if idx + 1 < len(lrc_lines):
                 next_text = _plain_text(lrc_lines[idx + 1][1])
-                next_tag = f"{{\\move(960,640,960,540,{move_start_ms},{dur_ms})}}"
+                next_tag = f"{{\\move(960,660,960,520,{move_start_ms},{dur_ms})}}"
                 fp.write(
                     f"Dialogue: 0,{start_ts},{end_ts},KaraokeNext,,0,0,0,,{next_tag}{next_text}\n"
                 )
@@ -160,7 +160,7 @@ def convert_lrc_to_ass(lrc_path: str, output_dir: str = ".") -> str:
             # Next2 line (if exists)
             if idx + 2 < len(lrc_lines):
                 next2_text = _plain_text(lrc_lines[idx + 2][1])
-                next2_tag = f"{{\\move(960,740,960,640,{move_start_ms},{dur_ms})\\fad({trans_ms},0)}}"
+                next2_tag = f"{{\\move(960,800,960,660,{move_start_ms},{dur_ms})\\fad({trans_ms},0)}}"
                 fp.write(
                     f"Dialogue: 0,{start_ts},{end_ts},KaraokeNext2,,0,0,0,,{next2_tag}{next2_text}\n"
                 )

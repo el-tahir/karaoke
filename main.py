@@ -39,6 +39,7 @@ Examples:
   %(prog)s "https://www.youtube.com/watch?v=YQHsXMglC9A"
   %(prog)s "radiohead creep" --output-dir ./my_karaoke
   %(prog)s "song title artist" --word-level --verbose
+  %(prog)s "https://www.youtube.com/watch?v=INSTRUMENTAL_URL" --instrumental-only
   %(prog)s --config my_config.json "search term"
 
 For more information, see the documentation at:
@@ -89,6 +90,12 @@ https://github.com/your-repo/karaoke-creator
         '--karaoke-only',
         action='store_true',
         help='Create only karaoke version (not original with vocals)'
+    )
+    
+    parser.add_argument(
+        '--instrumental-only',
+        action='store_true',
+        help='Input URL is already instrumental - skip audio separation and create only karaoke version'
     )
     
     # Audio options
@@ -211,8 +218,18 @@ https://github.com/your-repo/karaoke-creator
         config.lyrics.fallback_to_line_level = True
     
     # Processing settings
-    config.create_both_versions = not args.karaoke_only
+    config.create_both_versions = not args.karaoke_only and not args.instrumental_only
     config.cleanup_temp_files = args.cleanup
+    
+    # Instrumental-only mode validation and setup
+    if args.instrumental_only:
+        if not is_youtube_url(args.input):
+            print("Error: --instrumental-only can only be used with YouTube URLs, not search terms")
+            return 1
+        # Force karaoke-only mode when using instrumental input
+        config.create_both_versions = False
+        # Skip separation since input is already instrumental
+        config.skip_separation = True
     
     # Logging settings
     if args.debug:
@@ -255,6 +272,9 @@ https://github.com/your-repo/karaoke-creator
         print(f"Video resolution: {config.video.resolution}")
         print(f"Prefer word-level lyrics: {config.lyrics.prefer_word_level}")
         print(f"Create both versions: {config.create_both_versions}")
+        print(f"Skip audio separation: {config.skip_separation}")
+        if args.instrumental_only:
+            print("Instrumental-only mode: Input URL will be treated as instrumental audio")
         return 0
     
     try:

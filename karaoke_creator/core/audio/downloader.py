@@ -108,7 +108,7 @@ class AudioDownloader(LoggerMixin):
         Raises:
             AudioDownloadError: If download fails
         """
-        self.logger.info(f"Downloading audio for: {song_info.artist} - {song_info.track}")
+        self.logger.info(f"Downloading audio for: {song_info.artist} - {song_info.track} from {song_info.youtube_url}")
         
         # Ensure output directory exists
         ensure_directory_exists(output_dir)

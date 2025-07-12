@@ -211,22 +211,37 @@ class KaraokeCreator(LoggerMixin):
             if download_result.metadata.get('cached'):
                 self.logger.info("Using cached audio file")
             
-            # Step 3: Separate audio (vocals/instrumental)
-            self.logger.info("Step 3: Separating audio")
-            separation_result = self.separator.separate_audio(
-                audio_file, working_dir
-            )
-            self.processing_results['separation'] = separation_result
-            
-            if not separation_result.success:
-                raise KaraokeCreationError(f"Audio separation failed: {separation_result.error_message}")
-            
-            instrumental_file = separation_result.metadata.get('instrumental_file')
-            vocals_file = separation_result.metadata.get('vocals_file')
-            
-            # Log if using cached file
-            if separation_result.metadata.get('cached'):
-                self.logger.info("Using cached separated audio files")
+            # Step 3: Separate audio (vocals/instrumental) or use provided instrumental
+            if self.config.skip_separation:
+                self.logger.info("Step 3: Skipping audio separation - using provided instrumental audio")
+                # Use the downloaded audio as instrumental since it's already instrumental
+                instrumental_file = audio_file
+                vocals_file = None
+                
+                # Create a mock separation result for consistency
+                separation_result = ProcessingResult.success_result(
+                    output_file=instrumental_file,
+                    instrumental_file=instrumental_file,
+                    vocals_file=None,
+                    skipped=True
+                )
+                self.processing_results['separation'] = separation_result
+            else:
+                self.logger.info("Step 3: Separating audio")
+                separation_result = self.separator.separate_audio(
+                    audio_file, working_dir
+                )
+                self.processing_results['separation'] = separation_result
+                
+                if not separation_result.success:
+                    raise KaraokeCreationError(f"Audio separation failed: {separation_result.error_message}")
+                
+                instrumental_file = separation_result.metadata.get('instrumental_file')
+                vocals_file = separation_result.metadata.get('vocals_file')
+                
+                # Log if using cached file
+                if separation_result.metadata.get('cached'):
+                    self.logger.info("Using cached separated audio files")
             
             # Step 4: Fetch lyrics
             self.logger.info("Step 4: Fetching lyrics")

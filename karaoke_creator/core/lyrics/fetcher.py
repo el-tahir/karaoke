@@ -41,8 +41,8 @@ class LyricsFetcher(LoggerMixin):
         
         # Supported providers (in order of preference)
         self.providers = [
-            'musixmatch',
             'lrclib',
+            'musixmatch',
             'genius',
             'azlyrics',
         ]
