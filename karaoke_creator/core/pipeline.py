@@ -21,16 +21,16 @@ from .audio.downloader import AudioDownloader, AudioDownloadError
 from .audio.separator import AudioSeparator, AudioSeparationError
 from .lyrics.fetcher import LyricsFetcher, LyricsFetchError
 
+# Import video processing modules
+from .video.ass_converter import AssConverter, SubtitleGenerationError
+from .video.simple_renderer import VideoRenderer, VideoRenderingError
+
 # Import additional processing modules (to be implemented)
 try:
     from .lyrics.processor import LyricsProcessor
-    from .video.subtitle_generator import SubtitleGenerator
-    from .video.renderer import VideoRenderer
 except ImportError:
     # These will be implemented in the continuation
     LyricsProcessor = None
-    SubtitleGenerator = None
-    VideoRenderer = None
 
 
 class KaraokeCreationError(Exception):
@@ -72,11 +72,11 @@ class KaraokeCreator(LoggerMixin):
         self.downloader = AudioDownloader(self.config)
         self.separator = AudioSeparator(self.config)
         self.lyrics_fetcher = LyricsFetcher(self.config)
+        self.ass_converter = AssConverter(self.config)
+        self.video_renderer = VideoRenderer(self.config)
         
         # These will be initialized when modules are available
         self.lyrics_processor = None
-        self.subtitle_generator = None
-        self.video_renderer = None
         
         # Processing state
         self.current_song_info: Optional[SongInfo] = None
@@ -107,7 +107,13 @@ class KaraokeCreator(LoggerMixin):
         
         try:
             # Step 1: Search for song
-            song_info = self.searcher.search_song(search_term)
+            search_result = self.searcher.search_song(search_term)
+            self.processing_results['search'] = search_result
+            
+            if not search_result.success:
+                raise KaraokeCreationError(f"Song search failed: {search_result.error_message}")
+            
+            song_info = search_result.metadata['song_info']
             
             # Continue with the common pipeline
             return self._create_karaoke_from_song_info(
@@ -148,7 +154,13 @@ class KaraokeCreator(LoggerMixin):
         
         try:
             # Step 1: Extract song info from URL
-            song_info = self.searcher.extract_song_info_from_url(youtube_url)
+            url_result = self.searcher.extract_song_info_from_url(youtube_url)
+            self.processing_results['url_extraction'] = url_result
+            
+            if not url_result.success:
+                raise KaraokeCreationError(f"URL processing failed: {url_result.error_message}")
+            
+            song_info = url_result.metadata['song_info']
             
             # Continue with the common pipeline
             return self._create_karaoke_from_song_info(
@@ -280,38 +292,35 @@ class KaraokeCreator(LoggerMixin):
             }
             
             # Step 6: Generate subtitles
-            if self.subtitle_generator:
-                self.logger.info("Step 6: Generating subtitles")
-                subtitle_result = self.subtitle_generator.generate_subtitles(
-                    lyrics_file, working_dir, song_info
-                )
-                self.processing_results['subtitles'] = subtitle_result
-                
-                if not subtitle_result.success:
-                    raise KaraokeCreationError(f"Subtitle generation failed: {subtitle_result.error_message}")
-                
-                subtitle_file = subtitle_result.output_file
-            else:
-                # Fallback: use existing subtitle conversion logic
-                subtitle_file = self._convert_lrc_to_ass_fallback(lyrics_file, working_dir)
+            self.logger.info("Step 6: Generating subtitles")
+            subtitle_result = self.ass_converter.convert_lrc_to_ass(
+                lyrics_file, working_dir, song_info
+            )
+            self.processing_results['subtitles'] = subtitle_result
+            
+            if not subtitle_result.success:
+                raise KaraokeCreationError(f"Subtitle generation failed: {subtitle_result.error_message}")
+            
+            subtitle_file = subtitle_result.output_file
+            
+            # Log if using cached file
+            if subtitle_result.metadata.get('cached'):
+                self.logger.info("Using cached subtitle file")
             
             # Step 7: Render videos
-            if self.video_renderer:
-                self.logger.info("Step 7: Rendering videos")
-                video_result = self.video_renderer.render_videos(
-                    audio_file, instrumental_file, subtitle_file,
-                    self.config.final_videos_dir, song_info
-                )
-                self.processing_results['video'] = video_result
-                
-                if not video_result.success:
-                    raise KaraokeCreationError(f"Video rendering failed: {video_result.error_message}")
-            else:
-                # Fallback: use existing video creation logic
-                video_result = self._create_videos_fallback(
-                    audio_file, instrumental_file, subtitle_file, song_info
-                )
-                self.processing_results['video'] = video_result
+            self.logger.info("Step 7: Rendering videos")
+            video_result = self.video_renderer.render_videos(
+                audio_file, instrumental_file, subtitle_file,
+                self.config.final_videos_dir, song_info
+            )
+            self.processing_results['video'] = video_result
+            
+            if not video_result.success:
+                raise KaraokeCreationError(f"Video rendering failed: {video_result.error_message}")
+            
+            # Log if using cached files
+            if video_result.metadata.get('cached'):
+                self.logger.info("Using cached video files")
             
             # Clean up temporary files if configured
             if self.config.cleanup_temp_files:
@@ -339,58 +348,6 @@ class KaraokeCreator(LoggerMixin):
             self.logger.error(error_msg)
             raise KaraokeCreationError(error_msg) from e
     
-    def _convert_lrc_to_ass_fallback(self, lrc_file: str, output_dir: str) -> str:
-        """
-        Fallback method for LRC to ASS conversion.
-        
-        This uses the original conversion logic until the new module is ready.
-        """
-        # Import conversion function from integrated module
-        from .video.ass_converter import convert_lrc_to_ass
-        
-        return convert_lrc_to_ass(lrc_file, output_dir)
-    
-    def _create_videos_fallback(
-        self,
-        audio_file: str,
-        instrumental_file: str,
-        subtitle_file: str,
-        song_info: SongInfo
-    ) -> ProcessingResult:
-        """
-        Fallback method for video creation.
-        
-        This uses the original video creation logic until the new module is ready.
-        """
-        # Import simple FFmpeg renderer from integrated module
-        from .video.simple_renderer import create_karaoke_video
-        
-        # Ensure final videos directory exists
-        ensure_directory_exists(self.config.final_videos_dir)
-        
-        # Create karaoke version (instrumental)
-        karaoke_filename = f"{song_info.safe_filename_base}_karaoke.mp4"
-        karaoke_path = os.path.join(self.config.final_videos_dir, karaoke_filename)
-        
-        karaoke_video = create_karaoke_video(
-            instrumental_file, subtitle_file, karaoke_path
-        )
-        
-        # Create original version if configured
-        original_video = None
-        if self.config.create_both_versions:
-            original_filename = f"{song_info.safe_filename_base}_original.mp4"
-            original_path = os.path.join(self.config.final_videos_dir, original_filename)
-            
-            original_video = create_karaoke_video(
-                audio_file, subtitle_file, original_path
-            )
-        
-        return ProcessingResult.success_result(
-            output_file=karaoke_video,
-            karaoke_video=karaoke_video,
-            original_video=original_video,
-        )
     
     def _cleanup_temp_files(self, working_dir: str) -> None:
         """Clean up temporary files after processing."""

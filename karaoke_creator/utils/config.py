@@ -36,7 +36,7 @@ class VideoConfig:
     fps: int = 30
     
     # Subtitle styling
-    font_name: str = "Arial"
+    font_name: str = "Montserrat"
     current_line_size: int = 80
     preview_line_size: int = 60
     preview_line2_size: int = 50

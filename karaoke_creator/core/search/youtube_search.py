@@ -6,12 +6,17 @@ song metadata from search results or direct URLs.
 """
 
 import re
+import os
+import json
+import hashlib
 import yt_dlp
 from typing import Optional, Dict, Any
+from pathlib import Path
 
-from ...models.song_info import SongInfo
+from ...models.song_info import SongInfo, ProcessingResult
 from ...utils.logging import LoggerMixin, log_performance
 from ...utils.config import Config
+from ...utils.file_utils import ensure_directory_exists
 
 
 class YouTubeSearchError(Exception):
@@ -50,7 +55,7 @@ class YouTubeSearcher(LoggerMixin):
         }
     
     @log_performance
-    def search_song(self, search_term: str) -> SongInfo:
+    def search_song(self, search_term: str) -> ProcessingResult:
         """
         Search YouTube Music for a song and return song information.
         
@@ -61,17 +66,43 @@ class YouTubeSearcher(LoggerMixin):
             search_term: Search query (e.g., 'hello adele')
             
         Returns:
-            SongInfo object with extracted metadata
+            ProcessingResult containing SongInfo object
             
         Raises:
             YouTubeSearchError: If search fails or no results found
             
         Example:
             searcher = YouTubeSearcher()
-            song_info = searcher.search_song('hello adele')
+            result = searcher.search_song('hello adele')
+            song_info = result.metadata['song_info']
             print(f"{song_info.artist} - {song_info.track}")
         """
         self.logger.info(f"Searching YouTube Music for: {search_term}")
+        
+        # Check for cached search result
+        cache_dir = os.path.join(self.config.output_dir, '.cache', 'search')
+        ensure_directory_exists(cache_dir)
+        
+        search_hash = self._get_search_hash(search_term)
+        cache_file = os.path.join(cache_dir, f"search_{search_hash}.json")
+        
+        # Try to load from cache
+        if os.path.exists(cache_file) and os.path.getsize(cache_file) > 0:
+            try:
+                with open(cache_file, 'r', encoding='utf-8') as f:
+                    cached_data = json.load(f)
+                
+                song_info = SongInfo.from_dict(cached_data)
+                self.logger.info(f"Using cached search result for: {search_term}")
+                
+                return ProcessingResult.success_result(
+                    output_file=cache_file,
+                    song_info=song_info,
+                    cached=True,
+                    search_term=search_term
+                )
+            except Exception as e:
+                self.logger.warning(f"Failed to load cached search result: {e}")
         
         try:
             with yt_dlp.YoutubeDL(self.search_opts) as ydl:
@@ -89,7 +120,22 @@ class YouTubeSearcher(LoggerMixin):
                 self.logger.debug(f"Top search result URL: {video_url}")
                 
                 # Extract full metadata from the video
-                return self._extract_song_info_from_url(video_url)
+                song_info_result = self._extract_song_info_from_url(video_url)
+                song_info = song_info_result.metadata['song_info']
+                
+                # Cache the result
+                try:
+                    with open(cache_file, 'w', encoding='utf-8') as f:
+                        json.dump(song_info.to_dict(), f, indent=2, ensure_ascii=False)
+                except Exception as e:
+                    self.logger.warning(f"Failed to cache search result: {e}")
+                
+                return ProcessingResult.success_result(
+                    output_file=cache_file,
+                    song_info=song_info,
+                    search_term=search_term,
+                    video_url=video_url
+                )
                 
         except yt_dlp.utils.DownloadError as e:
             error_msg = f"YouTube search failed: {e}"
@@ -101,7 +147,7 @@ class YouTubeSearcher(LoggerMixin):
             raise YouTubeSearchError(error_msg) from e
     
     @log_performance
-    def extract_song_info_from_url(self, youtube_url: str) -> SongInfo:
+    def extract_song_info_from_url(self, youtube_url: str) -> ProcessingResult:
         """
         Extract song information from a direct YouTube URL.
         
@@ -112,21 +158,63 @@ class YouTubeSearcher(LoggerMixin):
             youtube_url: Direct YouTube or youtu.be URL
             
         Returns:
-            SongInfo object with extracted metadata
+            ProcessingResult containing SongInfo object
             
         Raises:
             YouTubeSearchError: If URL extraction fails
             
         Example:
             searcher = YouTubeSearcher()
-            song_info = searcher.extract_song_info_from_url(
+            result = searcher.extract_song_info_from_url(
                 'https://www.youtube.com/watch?v=YQHsXMglC9A'
             )
+            song_info = result.metadata['song_info']
         """
         self.logger.info(f"Extracting metadata from YouTube URL: {youtube_url}")
-        return self._extract_song_info_from_url(youtube_url)
+        
+        # Check for cached URL result
+        cache_dir = os.path.join(self.config.output_dir, '.cache', 'url')
+        ensure_directory_exists(cache_dir)
+        
+        url_hash = self._get_url_hash(youtube_url)
+        cache_file = os.path.join(cache_dir, f"url_{url_hash}.json")
+        
+        # Try to load from cache
+        if os.path.exists(cache_file) and os.path.getsize(cache_file) > 0:
+            try:
+                with open(cache_file, 'r', encoding='utf-8') as f:
+                    cached_data = json.load(f)
+                
+                song_info = SongInfo.from_dict(cached_data)
+                self.logger.info(f"Using cached URL result for: {youtube_url}")
+                
+                return ProcessingResult.success_result(
+                    output_file=cache_file,
+                    song_info=song_info,
+                    cached=True,
+                    youtube_url=youtube_url
+                )
+            except Exception as e:
+                self.logger.warning(f"Failed to load cached URL result: {e}")
+        
+        # Extract fresh metadata and cache it
+        song_info_result = self._extract_song_info_from_url(youtube_url)
+        song_info = song_info_result.metadata['song_info']
+        
+        # Cache the result
+        try:
+            with open(cache_file, 'w', encoding='utf-8') as f:
+                json.dump(song_info.to_dict(), f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            self.logger.warning(f"Failed to cache URL result: {e}")
+        
+        return ProcessingResult.success_result(
+            output_file=cache_file,
+            song_info=song_info,
+            youtube_url=youtube_url
+        )
     
-    def _extract_song_info_from_url(self, youtube_url: str) -> SongInfo:
+    def _extract_song_info_from_url(self, youtube_url: str) -> ProcessingResult:
         """
         Internal method to extract song info from URL.
         
@@ -134,7 +222,7 @@ class YouTubeSearcher(LoggerMixin):
             youtube_url: YouTube URL to extract from
             
         Returns:
-            SongInfo object with extracted metadata
+            ProcessingResult containing SongInfo object
             
         Raises:
             YouTubeSearchError: If extraction fails
@@ -169,7 +257,13 @@ class YouTubeSearcher(LoggerMixin):
                     f"Track: {song_info.track}"
                 )
                 
-                return song_info
+                return ProcessingResult.success_result(
+                    output_file="",  # No file output for metadata extraction
+                    song_info=song_info,
+                    title=video_info.get('title'),
+                    duration=video_info.get('duration'),
+                    uploader=video_info.get('uploader')
+                )
                 
         except yt_dlp.utils.DownloadError as e:
             error_msg = f"Failed to extract info from URL: {e}"
@@ -466,6 +560,32 @@ class YouTubeSearcher(LoggerMixin):
         
         return "", ""
     
+    def _get_search_hash(self, search_term: str) -> str:
+        """
+        Generate a hash for search term caching.
+        
+        Args:
+            search_term: Search query
+            
+        Returns:
+            SHA256 hash of the search term
+        """
+        return hashlib.sha256(search_term.encode('utf-8')).hexdigest()[:16]
+    
+    def _get_url_hash(self, url: str) -> str:
+        """
+        Generate a hash for URL caching.
+        
+        Args:
+            url: YouTube URL
+            
+        Returns:
+            SHA256 hash of the URL
+        """
+        # Normalize URL to remove query parameters that don't affect content
+        clean_url = url.split('&')[0].split('?')[0]
+        return hashlib.sha256(clean_url.encode('utf-8')).hexdigest()[:16]
+    
     def is_youtube_url(self, url: str) -> bool:
         """
         Check if a string is a valid YouTube URL.
@@ -496,7 +616,7 @@ class YouTubeSearcher(LoggerMixin):
             raise YouTubeSearchError(f"Invalid YouTube URL: {url}")
 
 
-def search_song(search_term: str, config: Optional[Config] = None) -> SongInfo:
+def search_song(search_term: str, config: Optional[Config] = None) -> ProcessingResult:
     """
     Convenience function to search for a song.
     
@@ -505,13 +625,13 @@ def search_song(search_term: str, config: Optional[Config] = None) -> SongInfo:
         config: Optional configuration
         
     Returns:
-        SongInfo object
+        ProcessingResult containing SongInfo object
     """
     searcher = YouTubeSearcher(config)
     return searcher.search_song(search_term)
 
 
-def extract_song_info_from_url(youtube_url: str, config: Optional[Config] = None) -> SongInfo:
+def extract_song_info_from_url(youtube_url: str, config: Optional[Config] = None) -> ProcessingResult:
     """
     Convenience function to extract song info from URL.
     
@@ -520,7 +640,7 @@ def extract_song_info_from_url(youtube_url: str, config: Optional[Config] = None
         config: Optional configuration
         
     Returns:
-        SongInfo object
+        ProcessingResult containing SongInfo object
     """
     searcher = YouTubeSearcher(config)
     return searcher.extract_song_info_from_url(youtube_url)
