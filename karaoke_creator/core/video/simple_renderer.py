@@ -80,7 +80,7 @@ class VideoRenderer(LoggerMixin):
                 base_name = song_info.safe_filename_base
             else:
                 base_name = Path(audio_file).stem
-            output_file = f"{base_name}_karaoke.mp4"
+            output_file = f"{base_name}_(karaoke).mp4"
         
         # Ensure output directory exists
         output_dir = os.path.dirname(output_file) if os.path.dirname(output_file) else "."
@@ -253,7 +253,7 @@ class VideoRenderer(LoggerMixin):
         original_video = None
         original_file_size = 0
         if self.config.create_both_versions and original_audio:
-            original_filename = f"{song_info.safe_filename_base}_original.mp4"
+            original_filename = f"{song_info.safe_filename_base}_(original).mp4"
             original_path = os.path.join(output_dir, original_filename)
             
             original_result = self.create_karaoke_video(

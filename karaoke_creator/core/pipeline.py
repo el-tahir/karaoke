@@ -87,7 +87,8 @@ class KaraokeCreator(LoggerMixin):
         self,
         search_term: str,
         output_dir: Optional[str] = None,
-        custom_settings: Optional[Dict[str, Any]] = None
+        custom_settings: Optional[Dict[str, Any]] = None,
+        lrc_content: Optional[str] = None
     ) -> ProcessingResult:
         """
         Create karaoke video from a search term.
@@ -115,9 +116,9 @@ class KaraokeCreator(LoggerMixin):
             
             song_info = search_result.metadata['song_info']
             
-            # Continue with the common pipeline
+            # Continue with the common pipeline, pass lrc_content
             return self._create_karaoke_from_song_info(
-                song_info, output_dir, custom_settings
+                song_info, output_dir, custom_settings, lrc_content=lrc_content
             )
             
         except YouTubeSearchError as e:
@@ -134,7 +135,8 @@ class KaraokeCreator(LoggerMixin):
         self,
         youtube_url: str,
         output_dir: Optional[str] = None,
-        custom_settings: Optional[Dict[str, Any]] = None
+        custom_settings: Optional[Dict[str, Any]] = None,
+        lrc_content: Optional[str] = None
     ) -> ProcessingResult:
         """
         Create karaoke video from a YouTube URL.
@@ -162,9 +164,9 @@ class KaraokeCreator(LoggerMixin):
             
             song_info = url_result.metadata['song_info']
             
-            # Continue with the common pipeline
+            # Continue with the common pipeline, pass lrc_content
             return self._create_karaoke_from_song_info(
-                song_info, output_dir, custom_settings
+                song_info, output_dir, custom_settings, lrc_content=lrc_content
             )
             
         except YouTubeSearchError as e:
@@ -180,7 +182,8 @@ class KaraokeCreator(LoggerMixin):
         self,
         song_info: SongInfo,
         output_dir: Optional[str] = None,
-        custom_settings: Optional[Dict[str, Any]] = None
+        custom_settings: Optional[Dict[str, Any]] = None,
+        lrc_content: Optional[str] = None
     ) -> ProcessingResult:
         """
         Internal method to create karaoke from song info.
@@ -255,21 +258,37 @@ class KaraokeCreator(LoggerMixin):
                 if separation_result.metadata.get('cached'):
                     self.logger.info("Using cached separated audio files")
             
-            # Step 4: Fetch lyrics
-            self.logger.info("Step 4: Fetching lyrics")
-            lyrics_result = self.lyrics_fetcher.fetch_lyrics(
-                song_info, working_dir
-            )
-            self.processing_results['lyrics'] = lyrics_result
-            
-            if not lyrics_result.success:
-                raise KaraokeCreationError(f"Lyrics fetching failed: {lyrics_result.error_message}")
-            
-            lyrics_file = lyrics_result.output_file
-            
-            # Log if using cached file
-            if lyrics_result.metadata.get('cached'):
-                self.logger.info("Using cached lyrics file")
+            # Step 4: Use user-supplied LRC content if provided, else fetch lyrics
+            if lrc_content or (self.config.lyrics.lrc_content and self.config.lyrics.lrc_content.strip()):
+                self.logger.info("Step 4: Using user-supplied LRC content for lyrics")
+                lrc_text = lrc_content if lrc_content else self.config.lyrics.lrc_content
+                from ..utils.file_utils import generate_safe_filename
+                filename_base = generate_safe_filename(song_info.artist, song_info.track)
+                lrc_filename = f"custom_{filename_base}.lrc"
+                lrc_path = os.path.join(working_dir, lrc_filename)
+                try:
+                    with open(lrc_path, 'w', encoding='utf-8') as f:
+                        f.write(lrc_text)
+                except Exception as e:
+                    self.logger.error(f"Failed to write user-supplied LRC file: {e}")
+                    raise KaraokeCreationError(f"Failed to write user-supplied LRC file: {e}")
+                lyrics_file = lrc_path
+                self.processing_results['lyrics'] = {'success': True, 'output_file': lrc_path, 'source': 'user-supplied'}
+            else:
+                self.logger.info("Step 4: Fetching lyrics")
+                lyrics_result = self.lyrics_fetcher.fetch_lyrics(
+                    song_info, working_dir
+                )
+                self.processing_results['lyrics'] = lyrics_result
+                
+                if not lyrics_result.success:
+                    raise KaraokeCreationError(f"Lyrics fetching failed: {lyrics_result.error_message}")
+                
+                lyrics_file = lyrics_result.output_file
+                
+                # Log if using cached file
+                if lyrics_result.metadata.get('cached'):
+                    self.logger.info("Using cached lyrics file")
             
             # Step 5: Process lyrics (romanization, timing adjustments)
             self.logger.info("Step 5: Processing lyrics (romanization)")

@@ -121,8 +121,8 @@ https://github.com/your-repo/karaoke-creator
     # Video options
     parser.add_argument(
         '--resolution',
-        default='1280x720',
-        help='Video resolution (default: 1280x720)'
+        default='1920x1080',
+        help='Video resolution (default: 1920x1080)'
     )
     
     parser.add_argument(
@@ -135,6 +135,17 @@ https://github.com/your-repo/karaoke-creator
     parser.add_argument(
         '--config',
         help='Path to configuration file (JSON format)'
+    )
+
+    # LRC content option
+    parser.add_argument(
+        '--lrc-content',
+        help='Paste LRC lyrics content directly (overrides lyric fetching)'
+    )
+    # LRC file option
+    parser.add_argument(
+        '--lrc-file',
+        help='Path to LRC file to use for lyrics (overrides --lrc-content and lyric fetching)'
     )
     
     parser.add_argument(
@@ -201,6 +212,25 @@ https://github.com/your-repo/karaoke-creator
     # Override config with command line arguments
     config.output_dir = args.output_dir
     config.final_videos_dir = args.final_videos_dir
+
+    # LRC content override (file takes precedence over content)
+    lrc_content = None
+    if args.lrc_file:
+        try:
+            with open(args.lrc_file, 'r', encoding='utf-8') as f:
+                lrc_content = f.read()
+            if not lrc_content.strip():
+                print(f"Error: --lrc-file '{args.lrc_file}' is empty.")
+                return 1
+        except Exception as e:
+            print(f"Error reading LRC file '{args.lrc_file}': {e}")
+            return 1
+    elif args.lrc_content is not None:
+        if not args.lrc_content.strip():
+            print("Error: --lrc-content provided but is empty.")
+            return 1
+        lrc_content = args.lrc_content
+    config.lyrics.lrc_content = lrc_content
     
     # Audio settings
     config.audio.audio_format = args.audio_format
@@ -304,9 +334,9 @@ https://github.com/your-repo/karaoke-creator
         print("This may take several minutes depending on the song length...")
         
         if is_youtube_url(args.input):
-            result = creator.create_karaoke_from_url(args.input, config.output_dir)
+            result = creator.create_karaoke_from_url(args.input, config.output_dir, lrc_content=config.lyrics.lrc_content)
         else:
-            result = creator.create_karaoke_from_search(args.input, config.output_dir)
+            result = creator.create_karaoke_from_search(args.input, config.output_dir, lrc_content=config.lyrics.lrc_content)
         
         if result.success:
             print("\n✅ Karaoke creation completed successfully!")

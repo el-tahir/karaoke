@@ -31,15 +31,15 @@ class VideoConfig:
     """Configuration for video generation."""
     
     # Video output settings
-    resolution: str = "1280x720"
+    resolution: str = "1920x1080"
     background_color: str = "black"
     fps: int = 30
     
     # Subtitle styling
     font_name: str = "Montserrat"
-    current_line_size: int = 80
+    current_line_size: int = 60
     preview_line_size: int = 60
-    preview_line2_size: int = 50
+    preview_line2_size: int = 60
     
     # Animation settings
     transition_duration: float = 0.3
@@ -62,6 +62,9 @@ class LyricsConfig:
     # Timing adjustments
     minimum_word_duration: float = 0.1
     line_gap_padding: float = 0.5
+
+    # User-supplied LRC content (if any)
+    lrc_content: Optional[str] = None
 
 
 @dataclass
@@ -163,6 +166,7 @@ class Config:
                 'japanese_romanization_style': self.lyrics.japanese_romanization_style,
                 'minimum_word_duration': self.lyrics.minimum_word_duration,
                 'line_gap_padding': self.lyrics.line_gap_padding,
+                'lrc_content': self.lyrics.lrc_content,
             },
             'ffmpeg_path': self.ffmpeg_path,
             'ffprobe_path': self.ffprobe_path,
