@@ -43,7 +43,7 @@ Examples:
   %(prog)s --config my_config.json "search term"
 
 For more information, see the documentation at:
-https://github.com/your-repo/karaoke-creator
+https://github.com/el-tahir/karaoke-creator
         """
     )
     

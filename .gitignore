@@ -7,4 +7,11 @@ venv/
 
 # Generated media & artifacts
 downloads/
-final_videos/ 
+final_videos/
+temp/
+
+# Development files
+*.log
+.DS_Store
+.vscode/
+.idea/ 

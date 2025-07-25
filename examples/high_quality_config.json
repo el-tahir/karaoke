@@ -1,0 +1,25 @@
+{
+  "audio": {
+    "quality": "320k",
+    "format": "mp3",
+    "enable_gpu": true,
+    "separation_model": "UVR_MDXNET_KARA_2.onnx"
+  },
+  "video": {
+    "resolution": "3840x2160",
+    "fps": 60,
+    "font_size": 96,
+    "font_name": "Helvetica",
+    "background_color": "#1a1a1a"
+  },
+  "lyrics": {
+    "prefer_word_level": true,
+    "enable_romanization": true,
+    "fallback_to_line_level": true
+  },
+  "processing": {
+    "cleanup_temp_files": false,
+    "create_both_versions": true,
+    "skip_existing": false
+  }
+}

@@ -10,7 +10,7 @@ This package provides a complete pipeline for creating karaoke videos by:
 """
 
 __version__ = "1.0.0"
-__author__ = "Karaoke Creator Team"
+__author__ = "Eltah"
 
 from .core.pipeline import KaraokeCreator
 from .models.song_info import SongInfo
