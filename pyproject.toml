@@ -1,0 +1,10 @@
+[project]
+name = "kara"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "audio-separator>=0.44.5",
+    "syncedlyrics>=1.0.1",
+    "yt-dlp>=2026.7.4",
+]
