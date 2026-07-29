@@ -6,7 +6,8 @@ from karaoke.meta import (
     _identify,
     _is_official_track,
     _search_terms,
-    parse_title,
+    _parse_title,
+    _pick_track
 )
 
 ART_TRACK = {
@@ -41,7 +42,7 @@ CASES = [
 
 @pytest.mark.parametrize("title,expected", CASES)
 def test_parse_title(title, expected):
-    assert parse_title(title) == expected
+    assert _parse_title(title) == expected
 
 
 @pytest.mark.parametrize("url,expected", [
@@ -101,3 +102,21 @@ def test_identify(info, expected):
 def test_identify_raises_on_empty_metadata():
     with pytest.raises(KaraokeError, match="no usable metadata"):
         _identify({"webpage_url": "https://youtu.be/x"})
+
+
+SEARCH_ENTRIES = [
+    {"ie_key": "YoutubeTab", "url": "https://music.youtube.com/browse/MPREb_052spLgIbYg"},
+    {"ie_key": "Youtube",    "url": "https://music.youtube.com/watch?v=ZiXW1Lf0XkY", "title": "I'm So Green"},
+    {"ie_key": "Youtube",    "url": "https://music.youtube.com/watch?v=WUVEnXw8zH0", "title": "CAN - I'm So Green"},
+]
+
+@pytest.mark.parametrize("entries,expected", [
+    (SEARCH_ENTRIES,                          "https://music.youtube.com/watch?v=ZiXW1Lf0XkY"),
+    (SEARCH_ENTRIES[1:],                      "https://music.youtube.com/watch?v=ZiXW1Lf0XkY"),
+    ([SEARCH_ENTRIES[0]],                     None),
+    ([],                                      None),
+    ([{"ie_key": "Youtube"}],                 None),
+    ([{"url": "https://x/watch?v=a"}],        None),
+])
+def test_pick_track(entries, expected):
+    assert _pick_track(entries) == expected
