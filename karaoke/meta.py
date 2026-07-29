@@ -31,7 +31,7 @@ _TOPIC = re.compile(r"\s*-\s*Topic$", re.I)
 def _pick_track(entries: list[dict]) -> str | None:
     # albums, artists and playlists come back as YoutubeTab; we want a single track
     for entry in entries:
-        if entry.get("ie_key") == "Youtube" and entry.get("url"):
+        if entry.get("ie_key") == "Youtube" and entry.get("url"): # single track
             return entry["url"]
     return None
 
