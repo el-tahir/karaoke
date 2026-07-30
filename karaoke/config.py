@@ -17,7 +17,7 @@ class Config:
     size_current: int = 60
     size_next: int = 52
     size_next2: int = 44
-    separation_model: str = "UVR_MDXNET_KARA_2.onnx"
+    separation_model: str = "UVR-MDX-NET-Inst_HQ_4.onnx" # best model i found for speed / quality
     ffmpeg: str = "ffmpeg"
     cookie_file: Path | None = None
     cookies_from_browser: str | None = None
