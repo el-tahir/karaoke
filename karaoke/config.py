@@ -4,7 +4,7 @@ from pathlib import Path
 
 from karaoke.errors import KaraokeError
 
-_PATH_FIELDS = ("work_dir", "out_dir", "cookie_file")  # to tell json loader which fields are Path objects
+_PATH_FIELDS = ("work_dir", "out_dir", "cookie_file", "model_dir")  # to tell json loader which fields are Path objects
 
 @dataclass
 class Config:
@@ -17,10 +17,11 @@ class Config:
     size_current: int = 60
     size_next: int = 52
     size_next2: int = 44
-    separation_model: str = "model_bs_roformer_ep_317_sdr_12.9755.ckpt"
+    separation_model: str = "UVR_MDXNET_KARA_2.onnx"
     ffmpeg: str = "ffmpeg"
     cookie_file: Path | None = None
     cookies_from_browser: str | None = None
+    model_dir: Path = Path("models")
 
     @classmethod
     def load(cls, path: Path | None) -> "Config":
