@@ -13,10 +13,11 @@ class Config:
     resolution: str = "1920x1080"
     fps: int = 30
     background: str = "black"
+    both_versions: bool = True
     font: str = "Montserrat"
     size_current: int = 60
-    size_next: int = 52
-    size_next2: int = 44
+    size_next: int = 60
+    size_next2: int = 60
     separation_model: str = "UVR-MDX-NET-Inst_HQ_4.onnx" # best model i found for speed / quality
     ffmpeg: str = "ffmpeg"
     cookie_file: Path | None = None
