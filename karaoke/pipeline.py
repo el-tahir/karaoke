@@ -23,7 +23,7 @@ def _read(path: Path) -> str:
             return raw.decode(encoding)
         except UnicodeDecodeError:
             continue
-        return raw.decode(_ENCODINGS[-1])
+    return raw.decode(_ENCODINGS[-1])
 
 
 def run(query: str, cfg: Config, *, lrc_file: Path | None = None,
@@ -32,7 +32,7 @@ def run(query: str, cfg: Config, *, lrc_file: Path | None = None,
         song, wd = meta.get_song(query, cfg.work_dir, cfg)
 
         if force:
-            log.info("clearing %s, wd")
+            log.info("clearing %s", wd)
             shutil.rmtree(wd, ignore_errors=True)
             wd.mkdir(parents=True, exist_ok=True)
 

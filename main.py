@@ -4,8 +4,6 @@ import sys
 from pathlib import Path
 import time
 
-import traceback
-
 from karaoke import pipeline
 
 from karaoke.config import Config
@@ -49,7 +47,6 @@ def main(argv : list[str] | None = None) -> int:
     except Exception as e:
         log.debug("unexpected failure", exc_info=True)
         print(f"unexpected error: {e}", file=sys.stderr)
-        print(traceback.format_exc(), file=sys.stderr)
         return 1
 
     for name, path in videos.items():

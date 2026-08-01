@@ -81,14 +81,14 @@ def _dimensions(resolution: str) -> tuple[int, int]:
 
 def _header(width: int, height: int, cfg: Config) -> str:
     scale = height / _BASE_HEIGHT
-    sizes = (cfg.size_current, cfg.size_next, cfg.size_next2)
-    styles = "\n".join(
-        f"Style: {name},{cfg.font},{round(size * scale)},"
+    size = round(cfg.font_size * scale) # every line is the same size; only weight,
+    styles = "\n".join(                 # opacity and outline separate the three
+        f"Style: {name},{cfg.font},{size},"
         f"{alpha}FFFFFF,&H00FFFFFF,&H00000000,&H00000000,"
         f"{bold},0,0,0,100,100,0,0,1,{round(outline * scale)},{round(shadow * scale)},"
         f"2,10,10,10,1"
-        for name, size, alpha, outline, shadow, bold
-        in zip(_STYLES, sizes, _ALPHAS, _OUTLINES, _SHADOWS, _BOLDS))
+        for name, alpha, outline, shadow, bold
+        in zip(_STYLES, _ALPHAS, _OUTLINES, _SHADOWS, _BOLDS))
     return _HEADER.format(width=width, height=height, styles=styles)
 
 def _timestamp(seconds: float) -> str:

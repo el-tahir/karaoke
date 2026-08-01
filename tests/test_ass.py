@@ -31,6 +31,10 @@ def move(event):
     return int(match[2]), int(match[4]), int(match[5]), int(match[6])
 
 
+def sizes(doc):
+    return [int(line.split(",")[2]) for line in doc.splitlines() if line.startswith("Style:")]
+
+
 @pytest.mark.parametrize("resolution,width,height", [
     ("1920x1080", 1920, 1080),
     ("3840x2160", 3840, 2160),
@@ -78,9 +82,18 @@ def test_coordinates_track_the_resolution():
     assert r"\move(960," in hd[0] and r"\move(1920," in uhd[0]
 
 
-def test_font_sizes_scale_with_the_resolution():
-    assert "Montserrat,60," in build(LINES, Config(resolution="1920x1080"))
-    assert "Montserrat,120," in build(LINES, Config(resolution="3840x2160"))
+@pytest.mark.parametrize("resolution,size", [
+    ("1920x1080",  65), # the height the configured size is written for
+    ("3840x2160", 130),
+    ("1280x720",   43),
+])
+def test_the_font_size_scales_with_the_resolution(resolution, size):
+    """all three at once - the tiers differ by weight, opacity and outline, never by size"""
+    assert sizes(build(LINES, Config(resolution=resolution))) == [size] * 3
+
+
+def test_the_font_size_is_configurable():
+    assert sizes(build(LINES, Config(font_size=48))) == [48] * 3
 
 
 def test_only_the_sung_line_is_bold():
@@ -145,9 +158,9 @@ PlayResY: 1080
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Current,Montserrat,60,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,3,3,2,10,10,10,1
-Style: Next,Montserrat,52,&H88FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1
-Style: Next2,Montserrat,44,&H66FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,1,2,10,10,10,1
+Style: Current,Montserrat,65,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,3,3,2,10,10,10,1
+Style: Next,Montserrat,65,&H88FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1
+Style: Next2,Montserrat,65,&H66FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,1,2,10,10,10,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text

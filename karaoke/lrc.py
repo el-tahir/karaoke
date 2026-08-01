@@ -7,6 +7,10 @@ from karaoke.models import Line
 _META = re.compile(r"^\[[a-zA-Z]{2,}:.*\]$")
 _STAMP = re.compile(r"\[(\d+):(\d+(?:\.\d+)?)\]")
 _WORD = re.compile(r"<(\d+):(\d+(?:\.\d+)?)>")
+_MARKER = "♫"
+_MIN_GAP = 15.0
+_HOLD = 10.0
+_COUNT_IN = 3
 
 def _split_stamps(raw: str) -> tuple[list[float], str]:
     """peels the leading [mm:ss.xx] stamps off a line, dropping the malformed ones"""
@@ -37,6 +41,19 @@ def parse(text: str, tail: float = 5.0) -> list[Line]:
         return []
 
     lines.sort(key=lambda line: line.start)
+
+    if lines[0].start >= _COUNT_IN:
+        first = lines[0].start
+        lines = [Line(first - n, 0.0, str(n)) for n in range(_COUNT_IN, 0, -1)] + lines
+
+    marked: list[Line] = []
+    for line, nxt in zip(lines, lines[1:]):
+        marked.append(line)
+        if nxt.start - line.start >= _MIN_GAP:
+            marked.append(Line(line.start + _HOLD, 0.0, _MARKER))
+    marked.append(lines[-1])
+    lines = marked
+
     for line, nxt in zip(lines, lines[1:]):
         line.end = nxt.start
     lines[-1].end = lines[-1].start + tail
