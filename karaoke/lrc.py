@@ -22,7 +22,7 @@ def _split_stamps(raw: str) -> tuple[list[float], str]:
         pos = match.end()
     return starts, raw[pos:]
 
-def parse(text: str, tail: float = 5.0) -> list[Line]:
+def parse(text: str, tail: float = 5.0, duration: float | None = None) -> list[Line]:
     lines: list[Line] = []
 
     for raw in text.splitlines():
@@ -56,5 +56,12 @@ def parse(text: str, tail: float = 5.0) -> list[Line]:
 
     for line, nxt in zip(lines, lines[1:]):
         line.end = nxt.start
-    lines[-1].end = lines[-1].start + tail
+
+    # a long outro is a break like any other, but only the song's length reveals it
+    if duration and duration - lines[-1].start >= _MIN_GAP:
+        lines[-1].end = lines[-1].start + _HOLD
+        lines.append(Line(lines[-1].end, duration, _MARKER))
+    else:
+        lines[-1].end = lines[-1].start + tail # no metadata, so hold and hope
+
     return lines

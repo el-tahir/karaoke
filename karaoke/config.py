@@ -15,7 +15,7 @@ class Config:
     background: str = "black"
     both_versions: bool = True
     font: str = "Montserrat"
-    font_size: int = 90
+    font_size: int = 88
     separation_model: str = "UVR-MDX-NET-Inst_HQ_4.onnx" # best model i found for speed / quality
     ffmpeg: str = "ffmpeg"
     cookie_file: Path | None = None

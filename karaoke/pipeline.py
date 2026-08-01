@@ -38,7 +38,7 @@ def run(query: str, cfg: Config, *, lrc_file: Path | None = None,
 
         #lyrics first: they are cheapest, if fails, pipeline fails fast
         lrc_path = lyrics.get_lyrics(song, wd, lrc_file)
-        lines = lrc.parse(_read(lrc_path))
+        lines = lrc.parse(_read(lrc_path), duration=song.duration)
         if not lines:
             raise KaraokeError(f"no timed lines in {lrc_path}; pass --lrc-file for supply your own")
 
